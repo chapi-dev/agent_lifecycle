@@ -7,6 +7,7 @@ on:
       - scripts/container-apps.env.example
       - scripts/verify_sqlite_filesystem.py
       - tests/test_container_app_spec.py
+      - tests/test_deployment_preflight.py
       - .github/workflows/restaurant-deployment-checks.yml
   pull_request:
     paths:
@@ -14,6 +15,7 @@ on:
       - scripts/container-apps.env.example
       - scripts/verify_sqlite_filesystem.py
       - tests/test_container_app_spec.py
+      - tests/test_deployment_preflight.py
       - .github/workflows/restaurant-deployment-checks.yml
 
 permissions:
@@ -29,4 +31,5 @@ jobs:
           python-version: "3.13"
       - run: bash -n scripts/deploy-container-apps.sh
       - run: python -m unittest discover -s tests -p test_container_app_spec.py -v
+      - run: python -m unittest discover -s tests -p test_deployment_preflight.py -v
       - run: python scripts/verify_sqlite_filesystem.py "$RUNNER_TEMP"
