@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentOps · El restaurante bajo control</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+* { box-sizing: border-box }
+body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font: 16px/1.5 "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif }
+main { max-width: 1440px; margin: auto; padding: 28px clamp(16px,4vw,48px) 72px }
+h1,h2,h3,p { margin: 0 }
+h1 { font-size: clamp(2.2rem,4vw,3.8rem); line-height: 1.05; letter-spacing: -.04em; max-width: 900px }
+h2 { font-size: 1.45rem; line-height: 1.2 }
+h3 { font-size: 1rem }
+a { color: var(--cp-link) }
+button { font: inherit; cursor: pointer; border: 1px solid var(--cp-border-strong); border-radius: .625rem; background: var(--cp-surface); color: var(--cp-text); padding: 10px 15px; font-weight: 650 }
+button:hover { border-color: var(--cp-accent); color: var(--cp-accent) }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 3px }
+button:disabled { opacity: .48; cursor: not-allowed }
+button.primary { background: var(--cp-accent); color: var(--cp-accent-fg); border-color: var(--cp-accent) }
+button.primary:hover { background: var(--cp-accent-hover) }
+code, pre { font-family: Consolas, "Courier New", Courier, monospace }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow: auto; background: var(--cp-surface-soft); padding: 16px; border-radius: .625rem; font-size: .79rem }
+.topline, .actions, .tagrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.topline { justify-content: space-between; margin-bottom: 48px }
+.brand { text-transform: uppercase; font-weight: 800; letter-spacing: .14em; color: var(--cp-accent); font-size: .77rem }
+.pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--cp-border); background: var(--cp-surface); border-radius: 999px; padding: 4px 10px; font-size: .72rem; font-weight: 700 }
+.pill.real { color: var(--cp-success) } .pill.sim { color: var(--cp-accent) } .pill.warn { color: var(--cp-text-muted) }
+.lede { max-width: 770px; margin: 16px 0 20px; color: var(--cp-text-muted); font-size: 1.12rem }
+.hero { border-bottom: 1px solid var(--cp-border); padding-bottom: 32px }
+.grid { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 16px; margin-top: 20px }
+.card { background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; padding: 22px; min-width: 0 }
+.span12 { grid-column: span 12 } .span8 { grid-column: span 8 } .span4 { grid-column: span 4 } .span6 { grid-column: span 6 }
+.cardhead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px }
+.kicker { font-weight: 800; color: var(--cp-accent); font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px }
+.muted { color: var(--cp-text-muted) } .small { font-size: .86rem } .space { margin-top: 14px } .space2 { margin-top: 22px }
+.flow { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-top: 16px }
+.node { border: 1px solid var(--cp-border); border-radius: .625rem; padding: 12px; background: var(--cp-bg-elevated); min-height: 104px }
+.node strong { display: block; font-size: .88rem } .node small { display: block; margin-top: 6px; color: var(--cp-text-muted) }
+.steps { display: flex; flex-wrap: wrap; gap: 7px; padding: 0; list-style: none }
+.steps li { flex: 1 1 100px; border-top: 4px solid var(--cp-border); padding: 8px 0; font-size: .78rem; font-weight: 700 }
+.steps li.current { border-color: var(--cp-accent); color: var(--cp-accent) } .steps li.done { border-color: var(--cp-success) }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px }
+.choice { text-align: left; min-height: 112px; padding: 16px }
+.choice span { display: block; font-weight: 400; font-size: .82rem; margin-top: 6px; color: var(--cp-text-muted) }
+.choice[aria-pressed="true"] { border: 2px solid var(--cp-accent); background: var(--cp-accent-soft) }
+.result { margin-top: 16px; padding: 14px; border-left: 4px solid var(--cp-border-strong); background: var(--cp-surface-soft); border-radius: 0 .625rem .625rem 0 }
+.result.good { border-color: var(--cp-success) } .result.bad { border-color: var(--cp-danger) }
+.metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 16px }
+.metric { background: var(--cp-bg-elevated); padding: 14px; border-radius: .625rem }
+.metric strong { display: block; font-size: 1.5rem } .metric span { font-size: .76rem; color: var(--cp-text-muted) }
+.track { height: 14px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 999px; overflow: hidden; margin-top: 12px }
+.track span { display: block; height: 100%; background: var(--cp-accent); transition: width .25s }
+.evidence { margin: 0; padding-left: 20px } .evidence li { padding: 4px 0 }
+details { margin-top: 14px } summary { cursor: pointer; font-weight: 700 }
+footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
+@media(max-width:850px) { .span8,.span4,.span6 { grid-column: span 12 } .flow { grid-template-columns: repeat(2,1fr) } .topline { margin-bottom: 26px } }
+@media(max-width:480px) { .choices,.metrics { grid-template-columns: 1fr } .flow { grid-template-columns: 1fr 1fr } }
+@media(prefers-reduced-motion:reduce) { * { transition: none !important } }
+</style>
+</head>
+<body>
+<main>
+  <div class="topline"><span class="brand">Laboratorio docente · AgentOps</span><div class="tagrow"><span class="pill real">● Pruebas reales</span><span class="pill sim">● Producción simulada</span><a href="https://github.com/chapi-dev/agent_lifecycle" target="_blank" rel="noopener">Repositorio ↗</a></div></div>
+  <header class="hero">
+    <div class="kicker">Del restaurante multiagente al cambio seguro</div>
+    <h1>Un cambio pequeño.<br>Una cuenta que no cuadra.</h1>
+    <p class="lede">Abre la caja negra: sigue un cambio en el agente de caja desde el código hasta una decisión de despliegue. Tú decides; las pruebas aportan la evidencia.</p>
+    <div class="tagrow"><span class="pill">Sin credenciales ni modelos</span><span class="pill">Pruebas del repositorio</span><span class="pill">Datos sintéticos</span></div>
+  </header>
+  <section class="grid" aria-label="Arquitectura y laboratorio">
+    <article class="card span12">
+      <div class="cardhead"><div><p class="kicker">01 · El sistema que estamos cambiando</p><h2>¿Quién hace qué?</h2></div><span class="pill warn">Arquitectura del repositorio</span></div>
+      <p class="muted small">La vista conversa con el BFF. El camarero coordina herramientas y especialistas; caja calcula los importes con código, no con el modelo.</p>
+      <div class="flow"><div class="node"><strong>👤 Cliente</strong><small>Streamlit · interacción y confirmación</small></div><div class="node"><strong>↔ BFF</strong><small>Contrato, sesión y eventos</small></div><div class="node"><strong>🎩 Camarero</strong><small>Orquesta modelo, memoria y herramientas</small></div><div class="node"><strong>🍳 Cocina</strong><small>Agente externo · A2A</small></div><div class="node"><strong>🧾 Caja</strong><small>Agente A2A · cálculo determinista</small></div></div>
+      <p class="small muted space">Además: MCP de asientos y conocimiento de la carta. En este panel no se arrancan esos servicios ni se invoca un modelo. <a href="https://github.com/chapi-dev/agent_lifecycle/blob/main/README.md" target="_blank" rel="noopener">Ver arquitectura ↗</a></p>
+    </article>
+    <article class="card span8">
+      <div class="cardhead"><div><p class="kicker">02 · El cambio</p><h2>Una propuesta, dos resultados</h2></div><span class="pill real">Código y tests reales</span></div>
+      <p class="muted">Imagina que un agente de desarrollo propone simplificar el cálculo de la cuenta. ¿Qué ocurre si olvida la cantidad?</p>
+      <div class="choices" role="group" aria-label="Selecciona la versión a evaluar">
+        <button class="choice" id="original" aria-pressed="true"><strong>A · Versión original</strong><span>Precio unitario × cantidad. Prueba el código actual.</span></button>
+        <button class="choice" id="regression" aria-pressed="false"><strong>B · Cambio defectuoso</strong><span>Solo precio unitario. Inyectado en una copia temporal; no toca el repositorio.</span></button>
+      </div>
+      <pre id="diff" aria-label="Cambio en el código"></pre>
+      <div class="actions"><button class="primary" id="evaluate">▶ Ejecutar pruebas de caja</button><span class="small muted" id="test-hint">Ejecuta pytest localmente, sin LLM.</span></div>
+      <div class="result" id="gate" role="status" aria-live="polite"><strong>Gate pendiente</strong><p class="small">El resultado debe existir antes de la revisión humana.</p></div>
+      <details><summary>Ver salida real de pytest</summary><pre id="output">Todavía no se han ejecutado pruebas.</pre></details>
+      <p class="small muted space">Pruebas originales: <a href="https://github.com/chapi-dev/agent_lifecycle/blob/main/agents/cashier/src/cashier_agent/tests/test_pricing.py" target="_blank" rel="noopener">test_pricing.py ↗</a> · código: <a href="https://github.com/chapi-dev/agent_lifecycle/blob/main/agents/cashier/src/cashier_agent/cashier_agent/pricing.py" target="_blank" rel="noopener">pricing.py ↗</a></p>
+    </article>
+    <article class="card span4">
+      <div class="cardhead"><div><p class="kicker">03 · El pipeline</p><h2>Las puertas de calidad</h2></div></div>
+      <ul class="steps" aria-label="Estado del recorrido"><li id="s-code" class="current">1. Cambio</li><li id="s-test">2. Tests</li><li id="s-review">3. Revisión</li><li id="s-canary">4. Canary</li><li id="s-rollback">5. Rollback</li></ul>
+      <p class="small muted">En GitHub, los workflows de este repositorio prueban y publican imágenes por SHA; otro ejecuta el recorrido E2E con dobles. Aquí solo la ejecución de pytest es real.</p>
+      <div class="result small"><strong>Pregunta al aula</strong><p>Si un agente ha escrito el cambio, ¿quién responde de su calidad y quién autoriza el despliegue?</p></div>
+      <p class="space small"><a href="https://github.com/chapi-dev/agent_lifecycle/actions" target="_blank" rel="noopener">Abrir GitHub Actions ↗</a></p>
+    </article>
+    <article class="card span6">
+      <div class="cardhead"><div><p class="kicker">04 · Decisión humana</p><h2>¿Autorizarías este cambio?</h2></div><span class="pill sim">Simulación local</span></div>
+      <p class="muted small">El botón se habilita solo si pasan las pruebas. Es una confirmación visual, no verifica identidad ni aprueba un entorno de GitHub.</p>
+      <div class="actions space"><button id="approve" disabled>✓ Aprobar para canary</button><button id="reject" disabled>✕ Rechazar</button></div>
+      <div class="result small" id="review-status" role="status">Esperando evaluación.</div>
+    </article>
+    <article class="card span6">
+      <div class="cardhead"><div><p class="kicker">05 · Operación</p><h2>Canary y vuelta atrás</h2></div><span class="pill sim">Tráfico sintético</span></div>
+      <p class="muted small">Simula 20 solicitudes: 16 a la versión estable y 4 a la candidata. Después introduce un fallo y observa la decisión.</p>
+      <div class="actions space"><button id="traffic" disabled>▶ Lanzar 20 solicitudes</button><button id="fault" disabled>⚡ Inyectar fallo</button><button id="rollback" disabled>↶ Rollback</button></div>
+      <div class="metrics"><div class="metric"><strong id="stable">0</strong><span>estable · solicitudes</span></div><div class="metric"><strong id="candidate">0</strong><span>candidata · solicitudes</span></div><div class="metric"><strong id="errors">0</strong><span>errores simulados</span></div></div>
+      <div class="track" aria-label="Porcentaje de tráfico candidato"><span id="traffic-bar" style="width:0%"></span></div>
+      <div class="result small" id="ops-status" role="status">Sin despliegue. Nada modifica Azure ni el restaurante.</div>
+    </article>
+    <article class="card span12">
+      <p class="kicker">06 · Conversación para el aula</p><h2>De la demo al mundo real</h2>
+      <div class="grid"><div class="span4"><h3>Evaluación ≠ magia</h3><p class="small muted space">Estos tests son deterministas. Para un agente con LLM añade datasets, evaluadores de herramientas, seguridad, coste, latencia y evaluación humana.</p></div><div class="span4"><h3>Gateway como frontera</h3><p class="small muted space">Un AI gateway podría centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Promoción de verdad</h3><p class="small muted space">Exige CI en PR, revisión identificada, artefactos inmutables, telemetría y rollback en la plataforma. Una animación no garantiza nada.</p></div></div>
+    </article>
+  </section>
+  <footer>Laboratorio local · No usar para decisiones reales de cobro ni como control de producción. La propuesta de código, la revisión, el tráfico y el rollback son simulaciones.</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let scenario = "original", passed = false, approved = false, requests = 0, faulted = false;
+function text(id, value) { $(id).textContent = value; }
+function state(id, cls) { $(id).className = cls; }
+function choose(next) {
+  scenario = next; passed = false; approved = false; requests = 0; faulted = false;
+  for (const id of ["original", "regression"]) $(id).setAttribute("aria-pressed", String(id === scenario));
+  text("diff", scenario === "original" ? "  line_total = unit × cantidad   ← versión original" : "- line_total = unit × cantidad\n+ line_total = unit              ← cambio en copia temporal");
+  $("gate").className = "result"; $("gate").innerHTML = "<strong>Gate pendiente</strong><p class='small'>El resultado debe existir antes de la revisión humana.</p>";
+  text("output", "Todavía no se han ejecutado pruebas."); text("review-status", "Esperando evaluación.");
+  text("ops-status", "Sin despliegue. Nada modifica Azure ni el restaurante.");
+  text("stable", "0"); text("candidate", "0"); text("errors", "0"); $("traffic-bar").style.width = "0%";
+  $("approve").disabled = $("reject").disabled = $("traffic").disabled = $("fault").disabled = $("rollback").disabled = true;
+  for (const id of ["s-code","s-test","s-review","s-canary","s-rollback"]) state(id, "");
+  state("s-code", "current");
+}
+for (const id of ["original", "regression"]) $(id).addEventListener("click", () => choose(id));
+$("evaluate").addEventListener("click", async () => {
+  $("evaluate").disabled = true; $("original").disabled = $("regression").disabled = true;
+  passed = approved = false; $("approve").disabled = $("reject").disabled = $("traffic").disabled = $("fault").disabled = $("rollback").disabled = true;
+  text("review-status", "Esperando evaluación."); text("ops-status", "Sin despliegue. Nada modifica Azure ni el restaurante.");
+  text("stable", "0"); text("candidate", "0"); text("errors", "0"); $("traffic-bar").style.width = "0%"; requests = 0; faulted = false;
+  for (const id of ["s-review", "s-canary", "s-rollback"]) state(id, "");
+  state("s-code", "done"); state("s-test", "current");
+  $("gate").className = "result"; $("gate").innerHTML = "<strong>Ejecutando pytest…</strong><p class='small'>Puede tardar unos segundos.</p>";
+  try {
+    const response = await fetch("/evaluate", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({scenario})});
+    const data = await response.json(); if (!response.ok) throw new Error(data.error || "Error de ejecución");
+    text("output", data.output + "\n\nSHA-256 del código original: " + data.source_sha256);
+    passed = scenario === "original" && data.status === "passed";
+    if (passed) {
+      $("gate").className = "result good"; $("gate").innerHTML = "<strong>✓ Gate superado</strong><p class='small'>Las pruebas existentes de caja han pasado. Aún falta una decisión humana.</p>";
+      state("s-test", "done"); state("s-review", "current"); $("approve").disabled = $("reject").disabled = false;
+      text("review-status", "La evidencia está disponible. Decide si simularías una aprobación.");
+    } else if (scenario === "regression" && data.regression_detected) {
+      $("gate").className = "result bad"; $("gate").innerHTML = "<strong>✕ Gate bloqueado: regresión detectada</strong><p class='small'>La prueba real para varias cantidades ha fallado. No se puede aprobar.</p>";
+      text("review-status", "Bloqueado: corrige el cambio y vuelve a evaluar.");
+    } else {
+      $("gate").className = "result bad"; $("gate").innerHTML = "<strong>✕ Evaluación no superada</strong><p class='small'>Revisa la salida: un error de entorno no es un resultado válido de calidad.</p>";
+      text("review-status", "Bloqueado: no hay evidencia suficiente.");
+    }
+  } catch (error) {
+    $("gate").className = "result bad"; text("gate", "No se pudo ejecutar: " + error.message); text("review-status", "Bloqueado: no hay evidencia suficiente.");
+  } finally { $("evaluate").disabled = false; $("original").disabled = $("regression").disabled = false; }
+});
+$("approve").addEventListener("click", () => {
+  if (!passed) return; approved = true; $("approve").disabled = $("reject").disabled = true; $("traffic").disabled = false;
+  text("review-status", "Aprobación simulada registrada en esta página."); state("s-review", "done"); state("s-canary", "current");
+});
+$("reject").addEventListener("click", () => {
+  approved = false; $("approve").disabled = $("reject").disabled = $("traffic").disabled = true;
+  text("review-status", "Rechazado en esta página. Vuelve a evaluar para empezar otra revisión.");
+});
+$("traffic").addEventListener("click", () => {
+  if (!approved) return; requests = 20; $("traffic").disabled = true; $("fault").disabled = false;
+  text("stable", "16"); text("candidate", "4"); $("traffic-bar").style.width = "20%";
+  text("ops-status", "Canary simulado: 4 de 20 solicitudes a la candidata; sin errores.");
+});
+$("fault").addEventListener("click", () => {
+  if (!approved || !requests) return; faulted = true; $("fault").disabled = true; $("rollback").disabled = false;
+  text("errors", "2"); text("ops-status", "Alerta simulada: 2 de 4 solicitudes de la candidata fallan (50%). Decide si vuelves atrás.");
+  state("s-canary", "done"); state("s-rollback", "current");
+});
+$("rollback").addEventListener("click", () => {
+  if (!faulted) return; $("rollback").disabled = true; $("traffic-bar").style.width = "0%";
+  text("ops-status", "Rollback simulado: el tráfico futuro vuelve al 100% a la estable. Las cifras de arriba son las ya observadas.");
+  state("s-rollback", "done");
+});
+choose("original");
+</script>
+</body>
+</html>
