@@ -3,6 +3,7 @@ scripts/*.env
 !scripts/*.env.example
 .container-apps-deploy.*/
 .local/
+.copilot-azure/
 .venv
 __pycache__/
 .pytest_cache/

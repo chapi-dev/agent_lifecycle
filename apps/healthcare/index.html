@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Laboratorio interactivo de AgentOps para administración sanitaria con datos sintéticos.">
+<title>Healthcare AgentOps · Centro de control</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+* { box-sizing: border-box }
+body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font: 16px/1.5 "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif }
+main { max-width: 1440px; margin: auto; padding: 24px clamp(16px,4vw,48px) 64px }
+h1,h2,h3,p { margin: 0 } h1 { font-size: clamp(2.4rem,5vw,4.6rem); line-height: 1.03; letter-spacing: -.05em; max-width: 900px }
+h2 { font-size: clamp(1.3rem,2vw,1.7rem); line-height: 1.2 } h3 { font-size: 1rem }
+button, select { font: inherit; color: var(--cp-text); border: 1px solid var(--cp-border-strong); border-radius: .625rem; background: var(--cp-surface); padding: 10px 14px }
+button { cursor: pointer; font-weight: 650 } button:hover { border-color: var(--cp-accent); color: var(--cp-accent) }
+button.primary { background: var(--cp-accent); border-color: var(--cp-accent); color: var(--cp-accent-fg) }
+button.primary:hover { background: var(--cp-accent-hover) } button:disabled { opacity: .48; cursor: not-allowed }
+button:focus-visible, select:focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 3px }
+.topline, .actions, .tagrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.topline { justify-content: space-between; margin-bottom: 48px }
+.brand { text-transform: uppercase; font-weight: 800; letter-spacing: .14em; color: var(--cp-accent); font-size: .75rem }
+.pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--cp-border); background: var(--cp-surface); border-radius: 999px; padding: 4px 10px; font-size: .72rem; font-weight: 700 }
+.pill.real { color: var(--cp-success) } .pill.sim { color: var(--cp-accent) }
+.lede { max-width: 820px; margin: 16px 0 20px; color: var(--cp-text-muted); font-size: 1.12rem }
+.hero { border-bottom: 1px solid var(--cp-border); padding-bottom: 32px }
+.grid { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 16px; margin-top: 20px }
+.card { background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; padding: 22px; min-width: 0 }
+.span12 { grid-column: span 12 } .span8 { grid-column: span 8 } .span4 { grid-column: span 4 } .span6 { grid-column: span 6 }
+.cardhead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px }
+.kicker { font-weight: 800; color: var(--cp-accent); font-size: .73rem; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px }
+.muted { color: var(--cp-text-muted) } .small { font-size: .86rem } .space { margin-top: 14px } .space2 { margin-top: 22px }
+.flow { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 16px }
+.node { border: 1px solid var(--cp-border); border-radius: .625rem; padding: 15px; background: var(--cp-bg-elevated); min-height: 108px }
+.node strong { display: block; font-size: .91rem } .node small { display: block; margin-top: 6px; color: var(--cp-text-muted) }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px }
+.choice { text-align: left; min-height: 112px; padding: 16px }
+.choice span { display: block; font-weight: 400; font-size: .82rem; margin-top: 6px; color: var(--cp-text-muted) }
+.choice[aria-pressed="true"] { border: 2px solid var(--cp-accent); background: var(--cp-accent-soft) }
+.result { margin-top: 16px; padding: 14px; border-left: 4px solid var(--cp-border-strong); background: var(--cp-surface-soft); border-radius: 0 .625rem .625rem 0 }
+.result.good { border-color: var(--cp-success) } .result.bad { border-color: var(--cp-danger) }
+.timeline { list-style: none; padding: 0; margin: 14px 0 0 }
+.timeline li { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 11px 0; border-top: 1px solid var(--cp-border); font-size: .86rem }
+.timeline li strong { color: var(--cp-accent) } .timeline small { display: block; color: var(--cp-text-muted) }
+.steps { display: flex; flex-wrap: wrap; gap: 7px; padding: 0; list-style: none }
+.steps li { flex: 1 1 85px; border-top: 4px solid var(--cp-border); padding: 8px 0; font-size: .76rem; font-weight: 700 }
+.steps li.current { border-color: var(--cp-accent); color: var(--cp-accent) } .steps li.done { border-color: var(--cp-success) }
+.test { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--cp-border); padding: 9px 0; font-size: .86rem }
+.pass { color: var(--cp-success); font-weight: 700 } .fail { color: var(--cp-danger); font-weight: 700 }
+.metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 16px }
+.metric { background: var(--cp-bg-elevated); padding: 14px; border-radius: .625rem }
+.metric strong { display: block; font-size: 1.5rem } .metric span { font-size: .76rem; color: var(--cp-text-muted) }
+.track { height: 14px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 999px; overflow: hidden; margin-top: 12px }
+.track span { display: block; height: 100%; background: var(--cp-accent); transition: width .25s }
+footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
+@media(max-width:850px) { .span8,.span4,.span6 { grid-column: span 12 } .flow { grid-template-columns: repeat(2,1fr) } .topline { margin-bottom: 26px } }
+@media(max-width:480px) { .choices,.metrics { grid-template-columns: 1fr } .timeline li { grid-template-columns: 1fr; gap: 3px } }
+@media(prefers-reduced-motion:reduce) { * { transition: none !important } }
+</style>
+</head>
+<body>
+<main>
+  <div class="topline"><span class="brand">Healthcare AgentOps · Aula</span><div class="tagrow"><span class="pill real">● Ejecución real</span><span class="pill sim">● Producción simulada</span><span class="pill">100% datos sintéticos</span></div></div>
+  <header class="hero">
+    <p class="kicker">Una solicitud · Cuatro responsabilidades · Una decisión humana</p>
+    <h1>Del expediente al<br>cambio seguro.</h1>
+    <p class="lede">Un centro de control para explorar cómo colaboran componentes de agentes, cómo se evalúa un cambio y por qué las personas siguen teniendo la última palabra.</p>
+    <div class="tagrow"><span class="pill">Administración sanitaria</span><span class="pill">Sin pacientes reales</span><span class="pill">Sin decisiones clínicas</span></div>
+  </header>
+  <section class="grid" aria-label="Laboratorio AgentOps sanitario">
+    <article class="card span12">
+      <div class="cardhead"><div><p class="kicker">01 · Arquitectura</p><h2>Un equipo, no una caja negra</h2></div><span class="pill real">Componentes deterministas</span></div>
+      <p class="small muted">Cada pieza tiene una responsabilidad. Se ejecutan en el servidor, con reglas fijas; este ejemplo <strong>no llama a un LLM</strong> ni a sistemas sanitarios.</p>
+      <div class="flow">
+        <div class="node"><strong>01 · Recepción</strong><small>Clasifica el trámite sintético.</small></div>
+        <div class="node"><strong>02 · Documentación</strong><small>Comprueba requisitos administrativos.</small></div>
+        <div class="node"><strong>03 · Coordinación</strong><small>Propone el siguiente paso.</small></div>
+        <div class="node"><strong>04 · Auditoría</strong><small>Registra la secuencia de la demo.</small></div>
+      </div>
+    </article>
+    <article class="card span8">
+      <div class="cardhead"><div><p class="kicker">02 · Observar</p><h2>Sigue un expediente sintético</h2></div><span class="pill real">Llamada real a la API</span></div>
+      <p class="small muted">Selecciona un caso predefinido. No escribas ni subas datos reales.</p>
+      <div class="actions space"><label for="case">Caso</label><select id="case" disabled><option>Cargando casos…</option></select><button id="run" class="primary" disabled>▶ Ejecutar recorrido</button></div>
+      <div class="result" id="case-status" role="status" aria-live="polite">Selecciona un caso y ejecuta el recorrido.</div>
+      <ol class="timeline" id="timeline" aria-label="Secuencia de componentes"></ol>
+    </article>
+    <article class="card span4">
+      <div class="cardhead"><div><p class="kicker">La conversación</p><h2>¿Qué puede decidir?</h2></div></div>
+      <p class="small muted">El sistema solo propone si un expediente administrativo está listo para revisión o necesita documentación. No prioriza pacientes, diagnostica, recomienda tratamientos ni ejecuta citas.</p>
+      <div class="result small"><strong>Pregunta al aula</strong><p>Si la documentación está incompleta, ¿qué evidencia pedirías antes de seguir?</p></div>
+      <p class="small muted space">La duración mostrada es local al servidor para esta ejecución; no incluye red ni mide un modelo.</p>
+    </article>
+    <article class="card span8">
+      <div class="cardhead"><div><p class="kicker">03 · Cambiar y evaluar</p><h2>El gate que no deja pasar una regresión</h2></div><span class="pill real">Evaluación real de reglas</span></div>
+      <p class="small muted">Un cambio hipotético elimina la comprobación de la derivación. La batería ejecuta las mismas reglas sobre cuatro casos sintéticos y compara resultado esperado y observado.</p>
+      <div class="choices" role="group" aria-label="Versión a evaluar">
+        <button class="choice" id="stable" aria-pressed="true"><strong>A · Versión estable</strong><span>Exige derivación y consentimiento administrativo.</span></button>
+        <button class="choice" id="candidate" aria-pressed="false"><strong>B · Regresión de ejemplo</strong><span>Omite la derivación. Es una rama de código incluida solo para enseñar el fallo.</span></button>
+      </div>
+      <div class="actions space"><button id="evaluate" class="primary">▶ Ejecutar evaluación</button><span class="small muted">No se modifica el código ni se llama a un modelo.</span></div>
+      <div class="result" id="gate" role="status" aria-live="polite"><strong>Gate pendiente</strong><p class="small">Ejecuta la evaluación antes de decidir.</p></div>
+      <div id="tests" aria-label="Resultados de evaluación"></div>
+    </article>
+    <article class="card span4">
+      <div class="cardhead"><div><p class="kicker">04 · Pipeline</p><h2>Puertas de calidad</h2></div></div>
+      <ul class="steps"><li id="s-code" class="current">Cambio</li><li id="s-test">Evaluación</li><li id="s-review">Revisión</li><li id="s-canary">Canary</li><li id="s-rollback">Rollback</li></ul>
+      <p class="small muted">El resultado funcional se calcula aquí. La aprobación, el tráfico y la vuelta atrás siguientes son <strong>simulaciones en el navegador</strong>, no acciones reales sobre Azure o GitHub.</p>
+      <div class="result small"><strong>Para producción</strong><p>CI en cada PR, aprobación verificable, artefactos inmutables, métricas y política de despliegue. Añade evaluaciones de modelos si los utilizas.</p></div>
+    </article>
+    <article class="card span6">
+      <div class="cardhead"><div><p class="kicker">05 · Persona en el circuito</p><h2>¿Autorizarías el cambio?</h2></div><span class="pill sim">Simulación local</span></div>
+      <p class="small muted">Solo se habilita con el gate superado. No verifica identidad ni concede permisos reales.</p>
+      <div class="actions space"><button id="approve" disabled>✓ Aprobar para canary</button><button id="reject" disabled>✕ Rechazar</button></div>
+      <div class="result small" id="review-status" role="status">Esperando evaluación.</div>
+    </article>
+    <article class="card span6">
+      <div class="cardhead"><div><p class="kicker">06 · Operación</p><h2>Canary y vuelta atrás</h2></div><span class="pill sim">Tráfico sintético</span></div>
+      <p class="small muted">Simula 20 solicitudes: 16 a la estable y 4 a la candidata. Introduce un fallo y decide la respuesta.</p>
+      <div class="actions space"><button id="traffic" disabled>▶ Lanzar 20 solicitudes</button><button id="fault" disabled>⚡ Inyectar fallo</button><button id="rollback" disabled>↶ Rollback</button></div>
+      <div class="metrics"><div class="metric"><strong id="stable-count">0</strong><span>estable · solicitudes</span></div><div class="metric"><strong id="candidate-count">0</strong><span>candidata · solicitudes</span></div><div class="metric"><strong id="errors">0</strong><span>errores simulados</span></div></div>
+      <div class="track" aria-label="Porcentaje de tráfico candidato"><span id="traffic-bar" style="width:0%"></span></div>
+      <div class="result small" id="ops-status" role="status">Sin despliegue ni tráfico real.</div>
+    </article>
+    <article class="card span12">
+      <p class="kicker">07 · Del aula al mundo real</p><h2>¿Qué piezas faltan en una organización?</h2>
+      <div class="grid"><div class="span4"><h3>Modelos y frameworks</h3><p class="small muted space">Un LLM y un framework de agentes pueden reemplazar o complementar reglas. Esta demo no usa ninguno; incorporar uno exige evaluar respuestas y herramientas.</p></div><div class="span4"><h3>AI gateway</h3><p class="small muted space">Puede centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Privacidad y supervisión</h3><p class="small muted space">Datos mínimos, acceso autenticado, trazabilidad y revisión humana. Esta aplicación es una maqueta docente, no un producto sanitario.</p></div></div>
+    </article>
+  </section>
+  <footer>Demostración exclusivamente educativa · No introducir datos de pacientes. No utilizar para decisiones clínicas ni para gestionar solicitudes reales.</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let version = "stable", passed = false, approved = false, requests = 0, faulted = false;
+function text(id, value) { $(id).textContent = value; }
+function state(id, cls) { $(id).className = cls; }
+function choose(next) {
+  version = next; passed = false; approved = false; requests = 0; faulted = false;
+  for (const id of ["stable", "candidate"]) $(id).setAttribute("aria-pressed", String(id === version));
+  $("gate").className = "result"; $("gate").innerHTML = "<strong>Gate pendiente</strong><p class='small'>Ejecuta la evaluación antes de decidir.</p>";
+  $("tests").replaceChildren(); $("timeline").replaceChildren(); text("case-status", "Selecciona un caso y ejecuta el recorrido.");
+  text("review-status", "Esperando evaluación."); text("ops-status", "Sin despliegue ni tráfico real.");
+  text("stable-count", "0"); text("candidate-count", "0"); text("errors", "0"); $("traffic-bar").style.width = "0%";
+  $("approve").disabled = $("reject").disabled = $("traffic").disabled = $("fault").disabled = $("rollback").disabled = true;
+  for (const id of ["s-code","s-test","s-review","s-canary","s-rollback"]) state(id, "");
+  state("s-code", "current");
+}
+async function post(path, body) {
+  const response = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  if (!response.ok) throw new Error("La API no respondió correctamente (" + response.status + ").");
+  return response.json();
+}
+function setBusy(busy) {
+  $("evaluate").disabled = $("stable").disabled = $("candidate").disabled = busy;
+  $("run").disabled = busy || $("case").disabled;
+}
+for (const id of ["stable", "candidate"]) $(id).addEventListener("click", () => choose(id));
+$("run").addEventListener("click", async () => {
+  setBusy(true); text("case-status", "Ejecutando…"); $("timeline").replaceChildren();
+  try {
+    const result = await post("/api/run", {case:$("case").value, version});
+    const ready = result.status === "ready";
+    $("case-status").className = "result " + (ready ? "good" : "bad");
+    text("case-status", (ready ? "Listo para revisión humana" : "Pendiente de documentación") + " · " + result.duration_ms + " ms de procesamiento del servidor");
+    for (const event of result.events) {
+      const li = document.createElement("li"), who = document.createElement("strong"), body = document.createElement("div"), detail = document.createElement("small");
+      who.textContent = event.agent; body.textContent = event.action; detail.textContent = event.detail;
+      body.append(detail); li.append(who, body); $("timeline").append(li);
+    }
+  } catch (error) { $("case-status").className = "result bad"; text("case-status", error.message); }
+  finally { setBusy(false); }
+});
+$("evaluate").addEventListener("click", async () => {
+  choose(version); setBusy(true); state("s-code", "done"); state("s-test", "current");
+  text("gate", "Evaluando casos sintéticos…");
+  try {
+    const result = await post("/api/evaluate", {version});
+    passed = result.passed; $("gate").className = "result " + (passed ? "good" : "bad");
+    text("gate", passed ? "✓ Gate superado: todos los casos pasan." : "✕ Gate bloqueado: se ha detectado una regresión.");
+    for (const item of result.results) {
+      const row = document.createElement("div"), label = document.createElement("span"), outcome = document.createElement("span");
+      row.className = "test"; label.textContent = item.title;
+      outcome.className = item.passed ? "pass" : "fail";
+      outcome.textContent = item.passed ? "✓ Correcto" : "✕ Esperado: pendiente · observado: listo";
+      row.append(label, outcome); $("tests").append(row);
+    }
+    if (passed) {
+      state("s-test", "done"); state("s-review", "current"); $("approve").disabled = $("reject").disabled = false;
+      text("review-status", "Evidencia disponible. Decide si simularías una aprobación.");
+    } else text("review-status", "Bloqueado: corrige el cambio y vuelve a evaluar.");
+  } catch (error) { $("gate").className = "result bad"; text("gate", error.message); text("review-status", "Bloqueado: no hay evidencia suficiente."); }
+  finally { setBusy(false); }
+});
+$("approve").addEventListener("click", () => {
+  if (!passed) return; approved = true; $("approve").disabled = $("reject").disabled = true; $("traffic").disabled = false;
+  text("review-status", "Aprobación simulada registrada en esta página."); state("s-review", "done"); state("s-canary", "current");
+});
+$("reject").addEventListener("click", () => {
+  approved = false; $("approve").disabled = $("reject").disabled = $("traffic").disabled = true;
+  text("review-status", "Rechazado en esta página. Vuelve a evaluar para empezar otra revisión.");
+});
+$("traffic").addEventListener("click", () => {
+  if (!approved) return; requests = 20; $("traffic").disabled = true; $("fault").disabled = false;
+  text("stable-count", "16"); text("candidate-count", "4"); $("traffic-bar").style.width = "20%";
+  text("ops-status", "Canary simulado: 4 de 20 solicitudes a la candidata; sin errores.");
+});
+$("fault").addEventListener("click", () => {
+  if (!approved || !requests) return; faulted = true; $("fault").disabled = true; $("rollback").disabled = false;
+  text("errors", "2"); text("ops-status", "Alerta simulada: 2 de 4 solicitudes de la candidata fallan (50%). Decide si vuelves atrás.");
+  state("s-canary", "done"); state("s-rollback", "current");
+});
+$("rollback").addEventListener("click", () => {
+  if (!faulted) return; $("rollback").disabled = true; $("traffic-bar").style.width = "0%";
+  text("ops-status", "Rollback simulado: el tráfico futuro vuelve al 100% a la estable. Las cifras de arriba son las ya observadas.");
+  state("s-rollback", "done");
+});
+choose("stable");
+fetch("/api/cases").then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(data => {
+  $("case").replaceChildren();
+  for (const item of data.cases) { const option = document.createElement("option"); option.value = item.id; option.textContent = item.title; $("case").append(option); }
+  $("case").disabled = $("run").disabled = false;
+}).catch(() => { text("case-status", "No se pudo cargar el catálogo de casos."); });
+</script>
+</body>
+</html>

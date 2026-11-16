@@ -19,6 +19,7 @@ El objetivo es mostrar conceptos como:
 
 ## Documentación
 
+- [Healthcare AgentOps: laboratorio de administración sanitaria](apps/healthcare/README.md)
 - [Especificación funcional](SPECS.md)
 - [Plan de implementación](PLAN_IMPLEMENTACION.md)
 - [Progreso de implementación](PROGRESO.md)
