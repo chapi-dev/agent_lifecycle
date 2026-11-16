@@ -1,0 +1,32 @@
+name: Restaurant deployment checks
+
+on:
+  push:
+    paths:
+      - scripts/deploy-container-apps.sh
+      - scripts/container-apps.env.example
+      - scripts/verify_sqlite_filesystem.py
+      - tests/test_container_app_spec.py
+      - .github/workflows/restaurant-deployment-checks.yml
+  pull_request:
+    paths:
+      - scripts/deploy-container-apps.sh
+      - scripts/container-apps.env.example
+      - scripts/verify_sqlite_filesystem.py
+      - tests/test_container_app_spec.py
+      - .github/workflows/restaurant-deployment-checks.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: bash -n scripts/deploy-container-apps.sh
+      - run: python -m unittest discover -s tests -p test_container_app_spec.py -v
+      - run: python scripts/verify_sqlite_filesystem.py "$RUNNER_TEMP"
