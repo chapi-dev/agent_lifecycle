@@ -1,0 +1,8 @@
+**
+!apps/
+!apps/healthcare/
+!apps/healthcare/requirements.txt
+!apps/healthcare/server.py
+!apps/healthcare/engine.py
+!apps/healthcare/model.py
+!apps/healthcare/index.html
