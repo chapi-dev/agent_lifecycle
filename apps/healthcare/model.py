@@ -43,11 +43,11 @@ def explain(case: str, version: str) -> dict:
                       else AzureCliCredential())
         token = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
         prompt = (
-            "Eres un asistente para una clase de AgentOps, no un profesional sanitario. "
-            "Estos datos son ficticios y administrativos. Explica en español, en tres frases breves, "
+            "Eres un asistente para una clase de AgentOps sobre un bar ficticio. "
+            "Explica en español, en tres frases breves, "
             "el resultado observado, compáralo con la referencia y señala si hay discrepancia. "
-            "No des consejo clínico ni propongas acciones sobre personas o sistemas.\n"
-            f"Caso: {result['title']}. Documentos ausentes: {', '.join(result['missing']) or 'ninguno'}. "
+            "No propongas acciones sobre personas o sistemas reales.\n"
+            f"Caso: {result['title']}. Productos agotados: {', '.join(result['missing']) or 'ninguno'}. "
             f"Versión: {version}. Resultado observado: {result['status']}. "
             f"Referencia estable: {reference['status']}."
         )

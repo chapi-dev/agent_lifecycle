@@ -9,6 +9,8 @@ COPY apps/healthcare/server.py ./server.py
 COPY apps/healthcare/engine.py ./engine.py
 COPY apps/healthcare/model.py ./model.py
 COPY apps/healthcare/index.html ./index.html
+COPY apps/healthcare/bar.css ./bar.css
+COPY apps/healthcare/bar.js ./bar.js
 COPY apps/frontend/src/frontend /app/source/apps/frontend/src/frontend
 COPY apps/frontend/preview /app/source/apps/frontend/preview
 

@@ -1,4 +1,4 @@
-"""HTTP server for the synthetic healthcare administration classroom."""
+"""HTTP server for the synthetic bar AgentOps classroom."""
 
 from __future__ import annotations
 
@@ -24,10 +24,10 @@ RESTAURANT = build_restaurant_preview().replace(
     "<body>",
     """<body>
 <nav class="classroom-nav" aria-label="Navegación de la clase">
-  <span>RESTAURANTE ORIGINAL <b>· RECREACIÓN VISUAL</b></span>
-  <a href="/lab">Ir al laboratorio sanitario →</a>
+  <span>BAR AGENTOPS <b>· EL CAMBIO COBRA VIDA</b></span>
+  <a href="/lab">Abrir el dashboard →</a>
 </nav>
-<div class="classroom-note">Escena y conversación simuladas, sin agentes conectados. Usa solo nombres ficticios.</div>""",
+<div class="classroom-note">Sala y chat simulados · el recorrido del pedido ejecuta reglas reales en la API · solo datos ficticios.</div>""",
     1,
 ).replace(
     "</style>",
@@ -46,7 +46,26 @@ RESTAURANT = build_restaurant_preview().replace(
       .classroom-note { top:43px; } }
 </style>""",
     1,
-).encode("utf-8")
+).replace(
+    '<link rel="stylesheet" href="preview.css">',
+    '<link rel="stylesheet" href="preview.css"><link rel="stylesheet" href="bar.css">',
+    1,
+).replace(
+    '<main class="sala">',
+    """<main class="sala">
+<section class="bar-control" aria-label="Experimento de la sala">
+  <div><small>EXPERIMENTO EN EL BAR · SOLO EN ESTE NAVEGADOR</small>
+    <strong id="bar-version">Cargando versión…</strong>
+    <span id="bar-case">Agua con gas agotada</span></div>
+  <button type="button" id="bar-run">▶ Ejecutar pedido</button>
+  <p id="bar-status" role="status" aria-live="polite">La animación representa los eventos reales de la API.</p>
+  <div class="bar-stages" aria-label="Estado de los componentes">
+    <span id="bar-stage-0">Camarero</span><span id="bar-stage-1">Barra</span>
+    <span id="bar-stage-2">Cocina</span><span id="bar-stage-3">Caja</span>
+  </div>
+</section>""",
+    1,
+).replace("</body>", '<script src="bar.js"></script></body>', 1).encode("utf-8")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -78,8 +97,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send(200, RESTAURANT, "text/html; charset=utf-8")
         elif path == "/lab":
             self.send(200, HTML.read_bytes(), "text/html; charset=utf-8")
-        elif path in {"/preview.css", "/preview.js"}:
-            asset = PREVIEW / path[1:]
+        elif path in {"/preview.css", "/preview.js", "/bar.css", "/bar.js"}:
+            asset = (HTML.parent if path.startswith("/bar.") else PREVIEW) / path[1:]
             kind = "text/css; charset=utf-8" if path.endswith(".css") else "text/javascript; charset=utf-8"
             self.send(200, asset.read_bytes(), kind)
         elif path == "/healthz":
@@ -127,7 +146,7 @@ def main() -> None:
     host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "8765"))
     server = ThreadingHTTPServer((host, port), Handler)
-    print(f"Healthcare AgentOps: http://{host}:{server.server_port}", flush=True)
+    print(f"Bar AgentOps: http://{host}:{server.server_port}", flush=True)
     server.serve_forever()
 
 

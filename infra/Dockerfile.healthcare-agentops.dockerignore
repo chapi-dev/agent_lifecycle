@@ -6,6 +6,8 @@
 !apps/healthcare/engine.py
 !apps/healthcare/model.py
 !apps/healthcare/index.html
+!apps/healthcare/bar.css
+!apps/healthcare/bar.js
 !apps/frontend/
 !apps/frontend/src/
 !apps/frontend/src/frontend/

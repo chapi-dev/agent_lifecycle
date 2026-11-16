@@ -91,16 +91,16 @@ class ModelEndpointTests(unittest.TestCase):
             with error:
                 return error.code
 
-    def test_restaurant_entry_and_healthcare_lab_are_available(self):
+    def test_restaurant_entry_and_bar_dashboard_are_available(self):
         base = f"http://127.0.0.1:{self.server.server_port}"
         with urlopen(base + "/?estado=dentro", timeout=5) as response:
             page = response.read().decode()
-            self.assertIn("RECREACIÓN VISUAL", page)
+            self.assertIn("BAR AGENTOPS", page)
             self.assertIn('href="/lab"', page)
             self.assertIn('class="escena', page)
         with urlopen(base + "/lab", timeout=5) as response:
-            self.assertIn("El viaje del expediente", response.read().decode())
-        for asset in ("/preview.css", "/preview.js"):
+            self.assertIn("El viaje del pedido", response.read().decode())
+        for asset in ("/preview.css", "/preview.js", "/bar.js"):
             with self.subTest(asset=asset), urlopen(base + asset, timeout=5) as response:
                 self.assertEqual(response.status, 200)
 

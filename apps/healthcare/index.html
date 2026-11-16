@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Laboratorio interactivo de AgentOps para administración sanitaria con datos sintéticos.">
-<title>Healthcare AgentOps · Centro de control</title>
+<meta name="description" content="Laboratorio interactivo de AgentOps para un bar ficticio.">
+<title>Bar AgentOps · Centro de control</title>
 <script>
   (() => {
     const param = new URLSearchParams(window.location.search).get("scoutTheme");
@@ -104,6 +104,7 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--cp-accent)
 .station .station-icon { display:block; font-size:1.55rem; margin-bottom:8px }
 .station.active { transform:translateY(-5px); border-color:#f7d286; background:rgba(246,200,112,.2); box-shadow:0 0 25px rgba(246,200,112,.22) }
 .station.done { border-color:#75ddb1; background:rgba(117,221,177,.13) }
+.station.error { border-color:#ff8e86; background:rgba(199,55,48,.35); box-shadow:0 0 25px rgba(255,83,77,.3) }
 .journey-line { height:5px; background:#537a7a; border-radius:8px; overflow:hidden; margin-top:18px }
 .journey-line span { display:block; width:0; height:100%; background:linear-gradient(90deg,#78e0bd,#ffdd9e); transition:width .5s ease }
 .journey-status { margin-top:10px; color:#d5eee6; font-size:.8rem }
@@ -135,43 +136,43 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
 </head>
 <body>
 <main>
-  <div class="topline"><span class="brand">Healthcare AgentOps · Aula</span><div class="tagrow"><span class="pill real">● Ejecución real</span><span class="pill sim">● Producción simulada</span><span class="pill">100% datos sintéticos</span></div></div>
+  <div class="topline"><span class="brand">Bar AgentOps · Aula</span><div class="tagrow"><span class="pill real">● Reglas y evaluación reales</span><span class="pill sim">● Despliegue simulado</span><span class="pill">Bar ficticio</span></div></div>
   <header class="hero">
-    <p class="kicker">Una solicitud · Cuatro responsabilidades · Una decisión humana</p>
-    <h1>Del expediente al<br>cambio seguro.</h1>
-    <p class="lede">Un centro de control para explorar cómo colaboran componentes de agentes, cómo se evalúa un cambio y por qué las personas siguen teniendo la última palabra.</p>
-    <div class="tagrow"><span class="pill">Administración sanitaria</span><span class="pill">Sin pacientes reales</span><span class="pill">Sin decisiones clínicas</span></div>
-    <p class="space"><a href="/">← Volver a la entrada y la sala del restaurante</a></p>
+    <p class="kicker">Una mesa · Cuatro roles · Un cambio visible</p>
+    <h1>Del bar al<br>cambio seguro.</h1>
+    <p class="lede">Cambia la regla de la barra, ejecuta las evaluaciones y vuelve a la sala para ver cómo cambia el pedido. La candidata vive solo en este navegador: no despliega nada.</p>
+    <div class="tagrow"><span class="pill">Camarero → Barra → Cocina → Caja</span><span class="pill">Pedido ficticio</span></div>
+    <p class="space"><a href="/?estado=dentro&amp;nombre=Demo&amp;run=1">▶ Ver el cambio en la sala</a> · <a href="/">Volver a la puerta</a></p>
   </header>
-  <section class="grid" aria-label="Laboratorio AgentOps sanitario">
+  <section class="grid" aria-label="Laboratorio AgentOps del bar">
     <article class="card span12">
       <div class="cardhead"><div><p class="kicker">01 · Arquitectura</p><h2>Un equipo, no una caja negra</h2></div><span class="pill real">Componentes deterministas</span></div>
-      <p class="small muted">La secuencia usa reglas fijas. Debajo puedes pedir una explicación a un LLM real: no cambia las reglas ni se conecta a sistemas sanitarios.</p>
+      <p class="small muted">Los cuatro roles ejecutan reglas deterministas en la API. El LLM opcional explica el resultado; no dirige el bar ni modifica el gate.</p>
       <div class="flow">
-        <div class="node"><strong>01 · Recepción</strong><small>Clasifica el trámite sintético.</small></div>
-        <div class="node"><strong>02 · Documentación</strong><small>Comprueba requisitos administrativos.</small></div>
-        <div class="node"><strong>03 · Coordinación</strong><small>Propone el siguiente paso.</small></div>
-        <div class="node"><strong>04 · Auditoría</strong><small>Registra la secuencia de la demo.</small></div>
+        <div class="node"><strong>01 · Camarero</strong><small>Recibe el pedido.</small></div>
+        <div class="node"><strong>02 · Barra</strong><small>Comprueba el stock de bebida.</small></div>
+        <div class="node"><strong>03 · Cocina</strong><small>Comprueba el stock de comida.</small></div>
+        <div class="node"><strong>04 · Caja</strong><small>Prepara una propuesta sin cobrar.</small></div>
       </div>
     </article>
     <article class="card span12">
       <div class="cardhead"><div><p class="kicker">02B · Modelo en vivo</p><h2>Una explicación, no una decisión</h2></div><span class="pill real">LLM real · opcional</span></div>
-      <p class="small muted">Envía únicamente el caso sintético seleccionado y la versión actual. El modelo compara el resultado con la referencia; sus palabras pueden ser erróneas. La evaluación determinista sigue siendo la autoridad del ejercicio.</p>
+      <p class="small muted">Envía únicamente el pedido ficticio seleccionado y la versión actual. El modelo compara el resultado con la referencia; sus palabras pueden ser erróneas. La evaluación determinista sigue siendo la autoridad del ejercicio.</p>
       <div class="actions space"><label for="model-token">Clave de la demo</label><input id="model-token" type="password" autocomplete="off" placeholder="Acceso al modelo"><button id="model-run" disabled>✦ Consultar modelo</button></div>
       <div class="result" id="model-result" role="status" aria-live="polite">Necesitas la clave de acceso y una conexión al modelo configurada en el servidor.</div>
-      <p class="small muted space">El LLM genera texto; no es un sistema clínico ni un agente autónomo. No escribas datos de pacientes.</p>
+      <p class="small muted space">El LLM genera texto; no es un agente autónomo ni opera el bar.</p>
     </article>
     <article class="card span8">
-      <div class="cardhead"><div><p class="kicker">02 · Observar</p><h2>Sigue un expediente sintético</h2></div><span class="pill real">Llamada real a la API</span></div>
-      <p class="small muted">Selecciona un caso predefinido. No escribas ni subas datos reales.</p>
+      <div class="cardhead"><div><p class="kicker">02 · Observar</p><h2>Sigue un pedido ficticio</h2></div><span class="pill real">Llamada real a la API</span></div>
+      <p class="small muted">Selecciona el caso que quieres reproducir también en la sala.</p>
       <div class="actions space"><label for="case">Caso</label><select id="case" disabled><option>Cargando casos…</option></select><button id="run" class="primary" disabled>▶ Ejecutar recorrido</button></div>
-      <div class="journey" aria-label="Visualización del recorrido administrativo">
-        <div class="journey-head"><div><strong>El viaje del expediente</strong><p class="small">Cada parada representa un evento devuelto por la API.</p></div><span class="pill">REPRODUCCIÓN VISUAL</span></div>
+      <div class="journey" aria-label="Visualización del recorrido del pedido">
+        <div class="journey-head"><div><strong>El viaje del pedido</strong><p class="small">Cada parada representa un evento devuelto por la API.</p></div><span class="pill">REPRODUCCIÓN VISUAL</span></div>
         <div class="journey-grid">
-          <div class="station" id="station-0"><span class="station-icon" aria-hidden="true">▣</span><strong>Recepción</strong><small>Entra la solicitud</small></div>
-          <div class="station" id="station-1"><span class="station-icon" aria-hidden="true">▤</span><strong>Documentación</strong><small>Se revisan requisitos</small></div>
-          <div class="station" id="station-2"><span class="station-icon" aria-hidden="true">◇</span><strong>Coordinación</strong><small>Se propone un paso</small></div>
-          <div class="station" id="station-3"><span class="station-icon" aria-hidden="true">✓</span><strong>Auditoría</strong><small>Se muestra la traza</small></div>
+          <div class="station" id="station-0"><span class="station-icon" aria-hidden="true">▣</span><strong>Camarero</strong><small>Recibe el pedido</small></div>
+          <div class="station" id="station-1"><span class="station-icon" aria-hidden="true">▤</span><strong>Barra</strong><small>Comprueba bebida</small></div>
+          <div class="station" id="station-2"><span class="station-icon" aria-hidden="true">◇</span><strong>Cocina</strong><small>Comprueba comida</small></div>
+          <div class="station" id="station-3"><span class="station-icon" aria-hidden="true">✓</span><strong>Caja</strong><small>Propone el resultado</small></div>
         </div>
         <div class="journey-line" aria-hidden="true"><span id="journey-progress"></span></div>
         <p class="journey-status" id="journey-status" aria-live="polite">Listo para iniciar el recorrido sintético.</p>
@@ -181,18 +182,18 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
     </article>
     <article class="card span4">
       <div class="cardhead"><div><p class="kicker">La conversación</p><h2>¿Qué puede decidir?</h2></div></div>
-      <p class="small muted">El sistema solo propone si un expediente administrativo está listo para revisión o necesita documentación. No prioriza pacientes, diagnostica, recomienda tratamientos ni ejecuta citas.</p>
-      <div class="result small"><strong>Pregunta al aula</strong><p>Si la documentación está incompleta, ¿qué evidencia pedirías antes de seguir?</p></div>
+      <p class="small muted">La API decide si el pedido ficticio puede proponerse para servir. No prepara comida, sirve bebidas ni cobra.</p>
+      <div class="result small"><strong>Pregunta al aula</strong><p>Si la barra dice que hay agua pero el inventario dice que no, ¿debería pasar el cambio?</p></div>
       <p class="small muted space">La duración mostrada es local al servidor para esta ejecución; no incluye red ni mide un modelo.</p>
     </article>
     <article class="card span8">
       <div class="cardhead"><div><p class="kicker">03 · Cambiar y evaluar</p><h2>El gate que no deja pasar una regresión</h2></div><span class="pill real">Evaluación real de reglas</span></div>
-      <p class="small muted">Un cambio hipotético elimina la comprobación de la derivación. La batería ejecuta las mismas reglas sobre cuatro casos sintéticos y compara resultado esperado y observado.</p>
+      <p class="small muted">La candidata elimina la comprobación de stock de la barra. La batería ejecuta cuatro pedidos ficticios y compara el resultado esperado con el observado.</p>
       <div class="choices" role="group" aria-label="Versión a evaluar">
-        <button class="choice" id="stable" aria-pressed="true"><strong>A · Versión estable</strong><span>Exige derivación y consentimiento administrativo.</span></button>
-        <button class="choice" id="candidate" aria-pressed="false"><strong>B · Regresión de ejemplo</strong><span>Omite la derivación. Es una rama de código incluida solo para enseñar el fallo.</span></button>
+        <button class="choice" id="stable" aria-pressed="true"><strong>A · Barra estable</strong><span>Comprueba si hay agua con gas antes de aceptar.</span></button>
+        <button class="choice" id="candidate" aria-pressed="false"><strong>B · Cambio defectuoso</strong><span>La barra ignora el stock. Rama deliberadamente defectuosa para el aula.</span></button>
       </div>
-      <div class="actions space"><button id="evaluate" class="primary">▶ Ejecutar evaluación</button><span class="small muted">No se modifica el código ni se llama a un modelo.</span></div>
+      <div class="actions space"><button id="evaluate" class="primary">▶ Ejecutar evaluación</button><a href="/?estado=dentro&amp;nombre=Demo&amp;run=1">▶ Ver esta versión en el bar</a><span class="small muted">La selección es local y no despliega código.</span></div>
       <div class="result" id="gate" role="status" aria-live="polite"><strong>Gate pendiente</strong><p class="small">Ejecuta la evaluación antes de decidir.</p></div>
       <div id="tests" aria-label="Resultados de evaluación"></div>
     </article>
@@ -210,22 +211,24 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
     </article>
     <article class="card span6">
       <div class="cardhead"><div><p class="kicker">06 · Operación</p><h2>Canary y vuelta atrás</h2></div><span class="pill sim">Tráfico sintético</span></div>
-      <p class="small muted">Simula 20 solicitudes: 16 a la estable y 4 a la candidata. Introduce un fallo y decide la respuesta.</p>
+      <p class="small muted">Simula 20 solicitudes: 16 a producción y 4 a la versión que acaba de superar el gate. Introduce un fallo y decide la respuesta.</p>
       <div class="actions space"><button id="traffic" disabled>▶ Lanzar 20 solicitudes</button><button id="fault" disabled>⚡ Inyectar fallo</button><button id="rollback" disabled>↶ Rollback</button></div>
-      <div class="metrics"><div class="metric"><strong id="stable-count">0</strong><span>estable · solicitudes</span></div><div class="metric"><strong id="candidate-count">0</strong><span>candidata · solicitudes</span></div><div class="metric"><strong id="errors">0</strong><span>errores simulados</span></div></div>
-      <div class="track" aria-label="Porcentaje de tráfico candidato"><span id="traffic-bar" style="width:0%"></span></div>
+      <div class="metrics"><div class="metric"><strong id="stable-count">0</strong><span>producción · solicitudes</span></div><div class="metric"><strong id="candidate-count">0</strong><span>versión evaluada · solicitudes</span></div><div class="metric"><strong id="errors">0</strong><span>errores simulados</span></div></div>
+      <div class="track" aria-label="Porcentaje de tráfico de la versión evaluada"><span id="traffic-bar" style="width:0%"></span></div>
       <div class="result small" id="ops-status" role="status">Sin despliegue ni tráfico real.</div>
     </article>
     <article class="card span12">
       <p class="kicker">07 · Del aula al mundo real</p><h2>¿Qué piezas faltan en una organización?</h2>
-      <div class="grid"><div class="span4"><h3>Modelos y frameworks</h3><p class="small muted space">La explicación opcional utiliza un modelo real; el recorrido sigue siendo determinista y no utiliza un framework de agentes. En producción hay que evaluar también respuestas y herramientas.</p></div><div class="span4"><h3>AI gateway</h3><p class="small muted space">Puede centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Privacidad y supervisión</h3><p class="small muted space">Datos mínimos, acceso controlado, trazabilidad y revisión humana. Esta aplicación es una maqueta docente, no un producto sanitario.</p></div></div>
+      <div class="grid"><div class="span4"><h3>Modelos y frameworks</h3><p class="small muted space">La explicación opcional utiliza un modelo real; el recorrido sigue siendo determinista y no utiliza un framework de agentes. En producción hay que evaluar también respuestas y herramientas.</p></div><div class="span4"><h3>AI gateway</h3><p class="small muted space">Puede centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Privacidad y supervisión</h3><p class="small muted space">Datos mínimos, acceso controlado, trazabilidad y revisión humana. Esta aplicación es una maqueta docente, no opera un bar real.</p></div></div>
     </article>
   </section>
-  <footer>Demostración exclusivamente educativa · No introducir datos de pacientes. No utilizar para decisiones clínicas ni para gestionar solicitudes reales.</footer>
+  <footer>Demostración exclusivamente educativa · No gestiona pedidos, pagos ni inventario reales.</footer>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 let version = "stable", passed = false, approved = false, requests = 0, faulted = false, catalogReady = false;
+function saved(key, fallback) { try { return sessionStorage.getItem(key) || fallback; } catch { return fallback; } }
+function save(key, value) { try { sessionStorage.setItem(key, value); } catch { /* The demo still works on this page. */ } }
 function text(id, value) { $(id).textContent = value; }
 function state(id, cls) { $(id).className = cls; }
 function resetJourney() {
@@ -235,6 +238,7 @@ function resetJourney() {
 }
 function choose(next) {
   version = next; passed = false; approved = false; requests = 0; faulted = false;
+  save("bar-version", version);
   resetJourney();
   $("model-result").className = "result"; text("model-result", "La versión ha cambiado. Consulta de nuevo el modelo para este caso.");
   for (const id of ["stable", "candidate"]) $(id).setAttribute("aria-pressed", String(id === version));
@@ -260,6 +264,8 @@ function setBusy(busy) {
 }
 for (const id of ["stable", "candidate"]) $(id).addEventListener("click", () => choose(id));
 $("case").addEventListener("change", () => {
+  save("bar-case", $("case").value);
+  resetJourney(); $("timeline").replaceChildren(); text("case-status", "Selecciona un caso y ejecuta el recorrido.");
   $("model-result").className = "result";
   text("model-result", "El caso ha cambiado. Consulta de nuevo el modelo.");
 });
@@ -282,17 +288,17 @@ $("run").addEventListener("click", async () => {
     const ready = result.status === "ready";
     const delay = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650;
     for (const [index, event] of result.events.entries()) {
-      state("station-" + index, "station active");
+      state("station-" + index, event.state === "error" ? "station error" : "station active");
       text("journey-status", event.agent + " · " + event.action);
       $("journey-progress").style.width = ((index + 1) * 25) + "%";
       const li = document.createElement("li"), who = document.createElement("strong"), body = document.createElement("div"), detail = document.createElement("small");
       who.textContent = event.agent; body.textContent = event.action; detail.textContent = event.detail;
       body.append(detail); li.append(who, body); $("timeline").append(li);
       if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-      state("station-" + index, "station done");
+      if (event.state !== "error") state("station-" + index, "station done");
     }
     $("case-status").className = "result " + (ready ? "good" : "bad");
-    text("case-status", (ready ? "Listo para revisión humana" : "Pendiente de documentación") + " · " + result.duration_ms + " ms de procesamiento del servidor");
+    text("case-status", (ready ? "Propuesto para servir" : "Pedido retenido por falta de stock") + " · " + result.duration_ms + " ms de procesamiento del servidor");
     text("journey-status", "Recorrido completado. La animación es una reproducción, no una medida de duración.");
   } catch (error) { $("case-status").className = "result bad"; text("case-status", error.message); }
   finally { setBusy(false); }
@@ -308,7 +314,8 @@ $("evaluate").addEventListener("click", async () => {
       const row = document.createElement("div"), label = document.createElement("span"), outcome = document.createElement("span");
       row.className = "test"; label.textContent = item.title;
       outcome.className = item.passed ? "pass" : "fail";
-      outcome.textContent = item.passed ? "✓ Correcto" : "✕ Esperado: pendiente · observado: listo";
+      const labelStatus = value => value === "ready" ? "propuesto" : "retenido";
+      outcome.textContent = item.passed ? "✓ Correcto" : "✕ Esperado: " + labelStatus(item.expected) + " · observado: " + labelStatus(item.observed);
       row.append(label, outcome); $("tests").append(row);
     }
     if (passed) {
@@ -329,11 +336,11 @@ $("reject").addEventListener("click", () => {
 $("traffic").addEventListener("click", () => {
   if (!approved) return; requests = 20; $("traffic").disabled = true; $("fault").disabled = false;
   text("stable-count", "16"); text("candidate-count", "4"); $("traffic-bar").style.width = "20%";
-  text("ops-status", "Canary simulado: 4 de 20 solicitudes a la candidata; sin errores.");
+  text("ops-status", "Canary simulado: 4 de 20 solicitudes a la versión evaluada; sin errores.");
 });
 $("fault").addEventListener("click", () => {
   if (!approved || !requests) return; faulted = true; $("fault").disabled = true; $("rollback").disabled = false;
-  text("errors", "2"); text("ops-status", "Alerta simulada: 2 de 4 solicitudes de la candidata fallan (50%). Decide si vuelves atrás.");
+  text("errors", "2"); text("ops-status", "Alerta simulada: 2 de 4 solicitudes de la versión evaluada fallan (50%). Decide si vuelves atrás.");
   state("s-canary", "done"); state("s-rollback", "current");
 });
 $("rollback").addEventListener("click", () => {
@@ -341,10 +348,13 @@ $("rollback").addEventListener("click", () => {
   text("ops-status", "Rollback simulado: el tráfico futuro vuelve al 100% a la estable. Las cifras de arriba son las ya observadas.");
   state("s-rollback", "done");
 });
-choose("stable");
+choose(saved("bar-version", "stable") === "candidate" ? "candidate" : "stable");
 fetch("/api/cases").then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(data => {
   $("case").replaceChildren();
   for (const item of data.cases) { const option = document.createElement("option"); option.value = item.id; option.textContent = item.title; $("case").append(option); }
+  const selected = saved("bar-case", "missing");
+  $("case").value = data.cases.some(item => item.id === selected) ? selected : data.cases[0].id;
+  save("bar-case", $("case").value);
   catalogReady = true; $("case").disabled = $("run").disabled = $("model-run").disabled = false;
 }).catch(() => { text("case-status", "No se pudo cargar el catálogo de casos."); });
 </script>
