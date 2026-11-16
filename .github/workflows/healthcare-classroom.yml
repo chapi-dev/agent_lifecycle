@@ -22,4 +22,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      - run: python -m pip install -r apps/healthcare/requirements.txt
       - run: python -m unittest discover -s apps/healthcare -p "test_*.py" -v

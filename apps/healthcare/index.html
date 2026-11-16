@@ -71,7 +71,7 @@ body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font: 16px/1.
 main { max-width: 1440px; margin: auto; padding: 24px clamp(16px,4vw,48px) 64px }
 h1,h2,h3,p { margin: 0 } h1 { font-size: clamp(2.4rem,5vw,4.6rem); line-height: 1.03; letter-spacing: -.05em; max-width: 900px }
 h2 { font-size: clamp(1.3rem,2vw,1.7rem); line-height: 1.2 } h3 { font-size: 1rem }
-button, select { font: inherit; color: var(--cp-text); border: 1px solid var(--cp-border-strong); border-radius: .625rem; background: var(--cp-surface); padding: 10px 14px }
+button, select, input { font: inherit; color: var(--cp-text); border: 1px solid var(--cp-border-strong); border-radius: .625rem; background: var(--cp-surface); padding: 10px 14px }
 button { cursor: pointer; font-weight: 650 } button:hover { border-color: var(--cp-accent); color: var(--cp-accent) }
 button.primary { background: var(--cp-accent); border-color: var(--cp-accent); color: var(--cp-accent-fg) }
 button.primary:hover { background: var(--cp-accent-hover) } button:disabled { opacity: .48; cursor: not-allowed }
@@ -97,6 +97,7 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--cp-accent)
 .choice span { display: block; font-weight: 400; font-size: .82rem; margin-top: 6px; color: var(--cp-text-muted) }
 .choice[aria-pressed="true"] { border: 2px solid var(--cp-accent); background: var(--cp-accent-soft) }
 .result { margin-top: 16px; padding: 14px; border-left: 4px solid var(--cp-border-strong); background: var(--cp-surface-soft); border-radius: 0 .625rem .625rem 0 }
+#model-result { white-space: pre-line }
 .result.good { border-color: var(--cp-success) } .result.bad { border-color: var(--cp-danger) }
 .timeline { list-style: none; padding: 0; margin: 14px 0 0 }
 .timeline li { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 11px 0; border-top: 1px solid var(--cp-border); font-size: .86rem }
@@ -129,13 +130,20 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
   <section class="grid" aria-label="Laboratorio AgentOps sanitario">
     <article class="card span12">
       <div class="cardhead"><div><p class="kicker">01 · Arquitectura</p><h2>Un equipo, no una caja negra</h2></div><span class="pill real">Componentes deterministas</span></div>
-      <p class="small muted">Cada pieza tiene una responsabilidad. Se ejecutan en el servidor, con reglas fijas; este ejemplo <strong>no llama a un LLM</strong> ni a sistemas sanitarios.</p>
+      <p class="small muted">La secuencia usa reglas fijas. Debajo puedes pedir una explicación a un LLM real: no cambia las reglas ni se conecta a sistemas sanitarios.</p>
       <div class="flow">
         <div class="node"><strong>01 · Recepción</strong><small>Clasifica el trámite sintético.</small></div>
         <div class="node"><strong>02 · Documentación</strong><small>Comprueba requisitos administrativos.</small></div>
         <div class="node"><strong>03 · Coordinación</strong><small>Propone el siguiente paso.</small></div>
         <div class="node"><strong>04 · Auditoría</strong><small>Registra la secuencia de la demo.</small></div>
       </div>
+    </article>
+    <article class="card span12">
+      <div class="cardhead"><div><p class="kicker">02B · Modelo en vivo</p><h2>Una explicación, no una decisión</h2></div><span class="pill real">LLM real · opcional</span></div>
+      <p class="small muted">Envía únicamente el caso sintético seleccionado y la versión actual. El modelo compara el resultado con la referencia; sus palabras pueden ser erróneas. La evaluación determinista sigue siendo la autoridad del ejercicio.</p>
+      <div class="actions space"><label for="model-token">Clave de la demo</label><input id="model-token" type="password" autocomplete="off" placeholder="Acceso al modelo"><button id="model-run" disabled>✦ Consultar modelo</button></div>
+      <div class="result" id="model-result" role="status" aria-live="polite">Necesitas la clave de acceso y una conexión al modelo configurada en el servidor.</div>
+      <p class="small muted space">El LLM genera texto; no es un sistema clínico ni un agente autónomo. No escribas datos de pacientes.</p>
     </article>
     <article class="card span8">
       <div class="cardhead"><div><p class="kicker">02 · Observar</p><h2>Sigue un expediente sintético</h2></div><span class="pill real">Llamada real a la API</span></div>
@@ -183,7 +191,7 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
     </article>
     <article class="card span12">
       <p class="kicker">07 · Del aula al mundo real</p><h2>¿Qué piezas faltan en una organización?</h2>
-      <div class="grid"><div class="span4"><h3>Modelos y frameworks</h3><p class="small muted space">Un LLM y un framework de agentes pueden reemplazar o complementar reglas. Esta demo no usa ninguno; incorporar uno exige evaluar respuestas y herramientas.</p></div><div class="span4"><h3>AI gateway</h3><p class="small muted space">Puede centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Privacidad y supervisión</h3><p class="small muted space">Datos mínimos, acceso autenticado, trazabilidad y revisión humana. Esta aplicación es una maqueta docente, no un producto sanitario.</p></div></div>
+      <div class="grid"><div class="span4"><h3>Modelos y frameworks</h3><p class="small muted space">La explicación opcional utiliza un modelo real; el recorrido sigue siendo determinista y no utiliza un framework de agentes. En producción hay que evaluar también respuestas y herramientas.</p></div><div class="span4"><h3>AI gateway</h3><p class="small muted space">Puede centralizar acceso a modelos, políticas, límites y métricas. Aquí no hay gateway conectado; LiteLLM es una opción abierta.</p></div><div class="span4"><h3>Privacidad y supervisión</h3><p class="small muted space">Datos mínimos, acceso controlado, trazabilidad y revisión humana. Esta aplicación es una maqueta docente, no un producto sanitario.</p></div></div>
     </article>
   </section>
   <footer>Demostración exclusivamente educativa · No introducir datos de pacientes. No utilizar para decisiones clínicas ni para gestionar solicitudes reales.</footer>
@@ -195,6 +203,7 @@ function text(id, value) { $(id).textContent = value; }
 function state(id, cls) { $(id).className = cls; }
 function choose(next) {
   version = next; passed = false; approved = false; requests = 0; faulted = false;
+  $("model-result").className = "result"; text("model-result", "La versión ha cambiado. Consulta de nuevo el modelo para este caso.");
   for (const id of ["stable", "candidate"]) $(id).setAttribute("aria-pressed", String(id === version));
   $("gate").className = "result"; $("gate").innerHTML = "<strong>Gate pendiente</strong><p class='small'>Ejecuta la evaluación antes de decidir.</p>";
   $("tests").replaceChildren(); $("timeline").replaceChildren(); text("case-status", "Selecciona un caso y ejecuta el recorrido.");
@@ -204,16 +213,35 @@ function choose(next) {
   for (const id of ["s-code","s-test","s-review","s-canary","s-rollback"]) state(id, "");
   state("s-code", "current");
 }
-async function post(path, body) {
-  const response = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+async function post(path, body, token = "") {
+  const headers = {"Content-Type":"application/json"};
+  if (token) headers["X-Demo-Token"] = token;
+  const response = await fetch(path, {method:"POST", headers, body:JSON.stringify(body)});
   if (!response.ok) throw new Error("La API no respondió correctamente (" + response.status + ").");
   return response.json();
 }
 function setBusy(busy) {
   $("evaluate").disabled = $("stable").disabled = $("candidate").disabled = busy;
   $("run").disabled = busy || $("case").disabled;
+  $("model-run").disabled = busy || $("case").disabled;
 }
 for (const id of ["stable", "candidate"]) $(id).addEventListener("click", () => choose(id));
+$("case").addEventListener("change", () => {
+  $("model-result").className = "result";
+  text("model-result", "El caso ha cambiado. Consulta de nuevo el modelo.");
+});
+$("model-run").addEventListener("click", async () => {
+  const token = $("model-token").value;
+  if (!token) { text("model-result", "Introduce la clave de la demo."); return; }
+  setBusy(true); text("model-result", "Consultando el modelo con datos sintéticos…");
+  try {
+    const result = await post("/api/model", {case:$("case").value, version}, token);
+    $("model-result").className = "result " + (result.discrepancy ? "bad" : "good");
+    text("model-result", "Modelo: " + result.model + " · " + result.duration_ms + " ms · " +
+      (result.discrepancy ? "La regla detecta discrepancia." : "Sin discrepancia en este caso.") + "\n\n" + result.text);
+  } catch (error) { $("model-result").className = "result bad"; text("model-result", error.message); }
+  finally { setBusy(false); }
+});
 $("run").addEventListener("click", async () => {
   setBusy(true); text("case-status", "Ejecutando…"); $("timeline").replaceChildren();
   try {
@@ -277,7 +305,7 @@ choose("stable");
 fetch("/api/cases").then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(data => {
   $("case").replaceChildren();
   for (const item of data.cases) { const option = document.createElement("option"); option.value = item.id; option.textContent = item.title; $("case").append(option); }
-  $("case").disabled = $("run").disabled = false;
+  $("case").disabled = $("run").disabled = $("model-run").disabled = false;
 }).catch(() => { text("case-status", "No se pudo cargar el catálogo de casos."); });
 </script>
 </body>
