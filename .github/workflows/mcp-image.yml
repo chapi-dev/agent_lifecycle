@@ -1,6 +1,7 @@
 name: Publish MCP image
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - services/mcp/**
