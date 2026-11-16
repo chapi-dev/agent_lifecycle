@@ -456,6 +456,7 @@ Para ejecutar el contenedor, se requieren siempre:
 | `FOUNDRY_PROJECT_ENDPOINT` | Endpoint del proyecto Foundry |
 | `AZURE_AI_MODEL_DEPLOYMENT_NAME` | Deployment del modelo, por ejemplo `gpt-5.6-luna` |
 | `MEMORY_DATABASE_PATH` | Ruta SQLite dentro del contenedor; usar `/data/memory.db` |
+| `MEMORY_SQLITE_JOURNAL_MODE` | `WAL` (por defecto) o `DELETE`; comprobar la compatibilidad de bloqueo antes de usar almacenamiento de red |
 | `WAITER_MAX_TURNS` | Límite de turnos, entre 1 y 100 |
 | `MEMORY_MAX_ITEMS` | Límite de recuerdos por identidad |
 | `APP_ENVIRONMENT` | `development`, `test` o `production` |
