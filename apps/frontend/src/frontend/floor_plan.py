@@ -21,8 +21,10 @@ import math
 import re
 from dataclasses import dataclass
 from html import escape
+from typing import TYPE_CHECKING
 
-from restaurant_contracts.seating import RoomPlace, RoomView, SeatingView
+if TYPE_CHECKING:
+    from restaurant_contracts.seating import RoomPlace, RoomView, SeatingView
 
 PLAN_W, PLAN_H = 1000, 340
 DOOR_GAP = (80, 168)

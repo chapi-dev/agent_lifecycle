@@ -6,3 +6,11 @@
 !apps/healthcare/engine.py
 !apps/healthcare/model.py
 !apps/healthcare/index.html
+!apps/frontend/
+!apps/frontend/src/
+!apps/frontend/src/frontend/
+!apps/frontend/src/frontend/**
+!apps/frontend/preview/
+!apps/frontend/preview/build_preview.py
+!apps/frontend/preview/preview.css
+!apps/frontend/preview/preview.js

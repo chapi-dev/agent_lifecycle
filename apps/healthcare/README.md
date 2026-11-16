@@ -15,7 +15,13 @@ Desde la raíz del repositorio:
 python apps\healthcare\server.py
 ```
 
-Abre <http://127.0.0.1:8765/>. Para comprobar los tests:
+Abre <http://127.0.0.1:8765/> para ver la fachada y la sala originales.
+Son una **recreación estática e interactiva**, con conversación simulada,
+no una conexión al backend multiagente del restaurante. Desde la barra superior
+entra al laboratorio sanitario, también disponible en
+<http://127.0.0.1:8765/lab>. Usa solo nombres ficticios. El recorrido sanitario
+reproduce visualmente los eventos reales de la API; su animación no representa
+la duración de los componentes. Para comprobar los tests:
 
 ```powershell
 python -m unittest discover -s apps\healthcare -p "test_*.py" -v

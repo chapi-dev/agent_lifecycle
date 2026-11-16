@@ -9,11 +9,14 @@ COPY apps/healthcare/server.py ./server.py
 COPY apps/healthcare/engine.py ./engine.py
 COPY apps/healthcare/model.py ./model.py
 COPY apps/healthcare/index.html ./index.html
+COPY apps/frontend/src/frontend /app/source/apps/frontend/src/frontend
+COPY apps/frontend/preview /app/source/apps/frontend/preview
 
 RUN groupadd --system app && useradd --system --gid app --home-dir /app app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    HEALTHOPS_SOURCE_ROOT=/app/source \
     HOST=0.0.0.0 \
     PORT=8765
 

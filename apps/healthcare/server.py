@@ -5,13 +5,47 @@ from __future__ import annotations
 import json
 import hmac
 import os
+import sys
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlsplit
 
 from engine import catalog, evaluate, run_case
 from model import ModelBusy, explain
 
 HTML = Path(__file__).with_name("index.html")
+ROOT = Path(os.environ.get("HEALTHOPS_SOURCE_ROOT", Path(__file__).resolve().parents[2]))
+PREVIEW = ROOT / "apps" / "frontend" / "preview"
+sys.path.insert(0, str(PREVIEW))
+from build_preview import build as build_restaurant_preview
+
+RESTAURANT = build_restaurant_preview().replace(
+    "<body>",
+    """<body>
+<nav class="classroom-nav" aria-label="Navegación de la clase">
+  <span>RESTAURANTE ORIGINAL <b>· RECREACIÓN VISUAL</b></span>
+  <a href="/lab">Ir al laboratorio sanitario →</a>
+</nav>
+<div class="classroom-note">Escena y conversación simuladas, sin agentes conectados. Usa solo nombres ficticios.</div>""",
+    1,
+).replace(
+    "</style>",
+    """.classroom-nav { position:fixed; z-index:1200; top:0; left:0; right:0; display:flex;
+      align-items:center; justify-content:space-between; gap:12px; padding:12px 20px;
+      background:rgba(10,15,31,.94); border-bottom:1px solid #69513a;
+      color:#f5e6ca; font:700 12px/1.3 system-ui,sans-serif; letter-spacing:.06em; }
+    .classroom-nav b { color:#e4af61; }
+    .classroom-nav a { color:#ffe0a2; white-space:nowrap; text-decoration:none; }
+    .classroom-nav a:focus-visible { outline:3px solid #ffe0a2; }
+    .classroom-note { position:fixed; z-index:1100; top:52px; left:0; right:0;
+      padding:5px 16px; background:rgba(10,15,31,.85); text-align:center;
+      color:#f5e6ca; font:12px/1.4 system-ui,sans-serif; }
+    .interior { padding-top:80px; }
+    @media(max-width:600px) { .classroom-nav { font-size:10px; padding:10px; }
+      .classroom-note { top:43px; } }
+</style>""",
+    1,
+).encode("utf-8")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -28,7 +62,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+            "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
             "connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'",
         )
         self.end_headers()
@@ -38,11 +72,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send(code, json.dumps(value, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
 
     def do_GET(self) -> None:
-        if self.path == "/":
+        path = urlsplit(self.path).path
+        if path == "/":
+            self.send(200, RESTAURANT, "text/html; charset=utf-8")
+        elif path == "/lab":
             self.send(200, HTML.read_bytes(), "text/html; charset=utf-8")
-        elif self.path == "/healthz":
+        elif path in {"/preview.css", "/preview.js"}:
+            asset = PREVIEW / path[1:]
+            kind = "text/css; charset=utf-8" if path.endswith(".css") else "text/javascript; charset=utf-8"
+            self.send(200, asset.read_bytes(), kind)
+        elif path == "/healthz":
             self.json(200, {"status": "ok"})
-        elif self.path == "/api/cases":
+        elif path == "/api/cases":
             self.json(200, {"cases": catalog()})
         else:
             self.json(404, {"error": "Not found"})

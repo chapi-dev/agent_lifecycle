@@ -4,10 +4,22 @@ on:
   push:
     paths:
       - apps/healthcare/**
+      - apps/frontend/preview/**
+      - apps/frontend/src/frontend/facade.py
+      - apps/frontend/src/frontend/floor_plan.py
+      - apps/frontend/src/frontend/styles/scene.css
+      - packages/contracts/src/restaurant_contracts/**
+      - infra/Dockerfile.healthcare-agentops*
       - .github/workflows/healthcare-classroom.yml
   pull_request:
     paths:
       - apps/healthcare/**
+      - apps/frontend/preview/**
+      - apps/frontend/src/frontend/facade.py
+      - apps/frontend/src/frontend/floor_plan.py
+      - apps/frontend/src/frontend/styles/scene.css
+      - packages/contracts/src/restaurant_contracts/**
+      - infra/Dockerfile.healthcare-agentops*
       - .github/workflows/healthcare-classroom.yml
   workflow_dispatch:
 

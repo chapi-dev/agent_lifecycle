@@ -117,8 +117,8 @@
 
   function leave() {
     messages.replaceChildren();
-    memories = [];
-    nextId = 1;
+    customer = "";
+    turn = 0;
     inside.hidden = true;
     inside.classList.remove("entrando", "menu-abierto");
     plan.classList.remove("atendiendo");

@@ -91,6 +91,19 @@ class ModelEndpointTests(unittest.TestCase):
             with error:
                 return error.code
 
+    def test_restaurant_entry_and_healthcare_lab_are_available(self):
+        base = f"http://127.0.0.1:{self.server.server_port}"
+        with urlopen(base + "/?estado=dentro", timeout=5) as response:
+            page = response.read().decode()
+            self.assertIn("RECREACIÓN VISUAL", page)
+            self.assertIn('href="/lab"', page)
+            self.assertIn('class="escena', page)
+        with urlopen(base + "/lab", timeout=5) as response:
+            self.assertIn("El viaje del expediente", response.read().decode())
+        for asset in ("/preview.css", "/preview.js"):
+            with self.subTest(asset=asset), urlopen(base + asset, timeout=5) as response:
+                self.assertEqual(response.status, 200)
+
     @patch("server.explain")
     def test_access_fails_closed_and_provider_failures_are_generic(self, explain):
         with patch.dict(os.environ, {"HEALTHOPS_DEMO_TOKEN": ""}):

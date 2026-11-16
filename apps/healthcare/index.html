@@ -92,6 +92,21 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--cp-accent)
 .flow { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 16px }
 .node { border: 1px solid var(--cp-border); border-radius: .625rem; padding: 15px; background: var(--cp-bg-elevated); min-height: 108px }
 .node strong { display: block; font-size: .91rem } .node small { display: block; margin-top: 6px; color: var(--cp-text-muted) }
+.journey { margin-top: 20px; padding: 22px; border-radius: 16px; overflow: hidden;
+  background: linear-gradient(135deg,#10263b,#153d48 60%,#1b4c46); color:#f4fffc; }
+.journey-head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center }
+.journey-head .pill { color:#b8f5d6; border-color:#72c99d; background:#183d39 }
+.journey-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:20px }
+.station { position:relative; min-height:122px; padding:16px 12px; border:1px solid #6b9b9b;
+  border-radius:12px; background:rgba(255,255,255,.07); transition:transform .35s, background .35s, border-color .35s }
+.station:not(:last-child)::after { content:'→'; position:absolute; right:-13px; top:42%; z-index:1; color:#b9dfd0; font-size:18px }
+.station strong,.station small { display:block } .station small { color:#c7e4dc; margin-top:5px }
+.station .station-icon { display:block; font-size:1.55rem; margin-bottom:8px }
+.station.active { transform:translateY(-5px); border-color:#f7d286; background:rgba(246,200,112,.2); box-shadow:0 0 25px rgba(246,200,112,.22) }
+.station.done { border-color:#75ddb1; background:rgba(117,221,177,.13) }
+.journey-line { height:5px; background:#537a7a; border-radius:8px; overflow:hidden; margin-top:18px }
+.journey-line span { display:block; width:0; height:100%; background:linear-gradient(90deg,#78e0bd,#ffdd9e); transition:width .5s ease }
+.journey-status { margin-top:10px; color:#d5eee6; font-size:.8rem }
 .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px }
 .choice { text-align: left; min-height: 112px; padding: 16px }
 .choice span { display: block; font-weight: 400; font-size: .82rem; margin-top: 6px; color: var(--cp-text-muted) }
@@ -114,8 +129,8 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--cp-accent)
 .track span { display: block; height: 100%; background: var(--cp-accent); transition: width .25s }
 footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
 @media(max-width:850px) { .span8,.span4,.span6 { grid-column: span 12 } .flow { grid-template-columns: repeat(2,1fr) } .topline { margin-bottom: 26px } }
-@media(max-width:480px) { .choices,.metrics { grid-template-columns: 1fr } .timeline li { grid-template-columns: 1fr; gap: 3px } }
-@media(prefers-reduced-motion:reduce) { * { transition: none !important } }
+@media(max-width:480px) { .choices,.metrics { grid-template-columns: 1fr } .timeline li { grid-template-columns: 1fr; gap: 3px } .journey-grid { grid-template-columns:repeat(2,1fr) } .station:nth-child(2)::after { content:'' } }
+@media(prefers-reduced-motion:reduce) { * { transition: none !important } .station.active { transform:none } }
 </style>
 </head>
 <body>
@@ -126,6 +141,7 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
     <h1>Del expediente al<br>cambio seguro.</h1>
     <p class="lede">Un centro de control para explorar cómo colaboran componentes de agentes, cómo se evalúa un cambio y por qué las personas siguen teniendo la última palabra.</p>
     <div class="tagrow"><span class="pill">Administración sanitaria</span><span class="pill">Sin pacientes reales</span><span class="pill">Sin decisiones clínicas</span></div>
+    <p class="space"><a href="/">← Volver a la entrada y la sala del restaurante</a></p>
   </header>
   <section class="grid" aria-label="Laboratorio AgentOps sanitario">
     <article class="card span12">
@@ -149,6 +165,17 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
       <div class="cardhead"><div><p class="kicker">02 · Observar</p><h2>Sigue un expediente sintético</h2></div><span class="pill real">Llamada real a la API</span></div>
       <p class="small muted">Selecciona un caso predefinido. No escribas ni subas datos reales.</p>
       <div class="actions space"><label for="case">Caso</label><select id="case" disabled><option>Cargando casos…</option></select><button id="run" class="primary" disabled>▶ Ejecutar recorrido</button></div>
+      <div class="journey" aria-label="Visualización del recorrido administrativo">
+        <div class="journey-head"><div><strong>El viaje del expediente</strong><p class="small">Cada parada representa un evento devuelto por la API.</p></div><span class="pill">REPRODUCCIÓN VISUAL</span></div>
+        <div class="journey-grid">
+          <div class="station" id="station-0"><span class="station-icon" aria-hidden="true">▣</span><strong>Recepción</strong><small>Entra la solicitud</small></div>
+          <div class="station" id="station-1"><span class="station-icon" aria-hidden="true">▤</span><strong>Documentación</strong><small>Se revisan requisitos</small></div>
+          <div class="station" id="station-2"><span class="station-icon" aria-hidden="true">◇</span><strong>Coordinación</strong><small>Se propone un paso</small></div>
+          <div class="station" id="station-3"><span class="station-icon" aria-hidden="true">✓</span><strong>Auditoría</strong><small>Se muestra la traza</small></div>
+        </div>
+        <div class="journey-line" aria-hidden="true"><span id="journey-progress"></span></div>
+        <p class="journey-status" id="journey-status" aria-live="polite">Listo para iniciar el recorrido sintético.</p>
+      </div>
       <div class="result" id="case-status" role="status" aria-live="polite">Selecciona un caso y ejecuta el recorrido.</div>
       <ol class="timeline" id="timeline" aria-label="Secuencia de componentes"></ol>
     </article>
@@ -198,11 +225,17 @@ footer { color: var(--cp-text-muted); margin-top: 32px; font-size: .8rem }
 </main>
 <script>
 const $ = id => document.getElementById(id);
-let version = "stable", passed = false, approved = false, requests = 0, faulted = false;
+let version = "stable", passed = false, approved = false, requests = 0, faulted = false, catalogReady = false;
 function text(id, value) { $(id).textContent = value; }
 function state(id, cls) { $(id).className = cls; }
+function resetJourney() {
+  for (let i = 0; i < 4; i++) state("station-" + i, "station");
+  $("journey-progress").style.width = "0%";
+  text("journey-status", "Listo para iniciar el recorrido sintético.");
+}
 function choose(next) {
   version = next; passed = false; approved = false; requests = 0; faulted = false;
+  resetJourney();
   $("model-result").className = "result"; text("model-result", "La versión ha cambiado. Consulta de nuevo el modelo para este caso.");
   for (const id of ["stable", "candidate"]) $(id).setAttribute("aria-pressed", String(id === version));
   $("gate").className = "result"; $("gate").innerHTML = "<strong>Gate pendiente</strong><p class='small'>Ejecuta la evaluación antes de decidir.</p>";
@@ -222,8 +255,8 @@ async function post(path, body, token = "") {
 }
 function setBusy(busy) {
   $("evaluate").disabled = $("stable").disabled = $("candidate").disabled = busy;
-  $("run").disabled = busy || $("case").disabled;
-  $("model-run").disabled = busy || $("case").disabled;
+  $("case").disabled = busy || !catalogReady;
+  $("run").disabled = $("model-run").disabled = busy || !catalogReady;
 }
 for (const id of ["stable", "candidate"]) $(id).addEventListener("click", () => choose(id));
 $("case").addEventListener("change", () => {
@@ -243,17 +276,24 @@ $("model-run").addEventListener("click", async () => {
   finally { setBusy(false); }
 });
 $("run").addEventListener("click", async () => {
-  setBusy(true); text("case-status", "Ejecutando…"); $("timeline").replaceChildren();
+  setBusy(true); resetJourney(); text("case-status", "Ejecutando…"); $("timeline").replaceChildren();
   try {
     const result = await post("/api/run", {case:$("case").value, version});
     const ready = result.status === "ready";
-    $("case-status").className = "result " + (ready ? "good" : "bad");
-    text("case-status", (ready ? "Listo para revisión humana" : "Pendiente de documentación") + " · " + result.duration_ms + " ms de procesamiento del servidor");
-    for (const event of result.events) {
+    const delay = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650;
+    for (const [index, event] of result.events.entries()) {
+      state("station-" + index, "station active");
+      text("journey-status", event.agent + " · " + event.action);
+      $("journey-progress").style.width = ((index + 1) * 25) + "%";
       const li = document.createElement("li"), who = document.createElement("strong"), body = document.createElement("div"), detail = document.createElement("small");
       who.textContent = event.agent; body.textContent = event.action; detail.textContent = event.detail;
       body.append(detail); li.append(who, body); $("timeline").append(li);
+      if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+      state("station-" + index, "station done");
     }
+    $("case-status").className = "result " + (ready ? "good" : "bad");
+    text("case-status", (ready ? "Listo para revisión humana" : "Pendiente de documentación") + " · " + result.duration_ms + " ms de procesamiento del servidor");
+    text("journey-status", "Recorrido completado. La animación es una reproducción, no una medida de duración.");
   } catch (error) { $("case-status").className = "result bad"; text("case-status", error.message); }
   finally { setBusy(false); }
 });
@@ -305,7 +345,7 @@ choose("stable");
 fetch("/api/cases").then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(data => {
   $("case").replaceChildren();
   for (const item of data.cases) { const option = document.createElement("option"); option.value = item.id; option.textContent = item.title; $("case").append(option); }
-  $("case").disabled = $("run").disabled = $("model-run").disabled = false;
+  catalogReady = true; $("case").disabled = $("run").disabled = $("model-run").disabled = false;
 }).catch(() => { text("case-status", "No se pudo cargar el catálogo de casos."); });
 </script>
 </body>
