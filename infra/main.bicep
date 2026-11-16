@@ -13,7 +13,7 @@ param createdAt string
 param deployerObjectId string
 
 @secure()
-param healthopsDemoToken string
+param healthopsDemoToken string = newGuid()
 
 @minLength(1)
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
