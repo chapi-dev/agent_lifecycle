@@ -14,7 +14,8 @@ from engine import catalog, evaluate, run_case
 from model import ModelBusy, explain
 
 HTML = Path(__file__).with_name("index.html")
-ROOT = Path(os.environ.get("HEALTHOPS_SOURCE_ROOT", Path(__file__).resolve().parents[2]))
+source_root = os.environ.get("HEALTHOPS_SOURCE_ROOT")
+ROOT = Path(source_root) if source_root else Path(__file__).resolve().parents[2]
 PREVIEW = ROOT / "apps" / "frontend" / "preview"
 sys.path.insert(0, str(PREVIEW))
 from build_preview import build as build_restaurant_preview
