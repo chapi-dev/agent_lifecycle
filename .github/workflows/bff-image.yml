@@ -1,6 +1,7 @@
 name: Publish BFF image
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - apps/bff/**

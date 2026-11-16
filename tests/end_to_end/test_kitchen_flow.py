@@ -33,7 +33,7 @@ def test_an_order_reaches_the_kitchen_and_its_answer_comes_before_the_waiter() -
     assert [line.name for line in report.order.lines] == ["morcilla a la brasa", "agua con gas"]
     assert isinstance(report.result, KitchenFailure)
     assert report.result.code is KitchenFailureCode.KITCHEN_NOT_CONFIGURED
-    assert kitchen.text.startswith("Cocina no ha podido preparar el plan del pedido.")
+    assert kitchen.text == f"Cocina no ha podido preparar el pedido. {report.result.message}"
     assert reply.text == "Cocina no ha podido revisar el pedido ahora mismo."
 
     visit.send_message("Gracias")

@@ -1,9 +1,11 @@
+import sqlite3
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from restaurant_agent.config import Settings
+from restaurant_agent.memory import create_memory_store
 
 
 @pytest.fixture(autouse=True)
@@ -44,3 +46,14 @@ def test_fake_identity_does_not_require_a_memory_consent_setting() -> None:
 def test_fake_identity_requires_actor_id() -> None:
     with pytest.raises(ValidationError):
         settings(enable_dev_fake_identity=True)
+
+
+def test_memory_journal_mode_is_configurable_for_network_storage(tmp_path: Path) -> None:
+    path = tmp_path / "memory.db"
+    configured = settings(memory_database_path=path, memory_sqlite_journal_mode="DELETE")
+    create_memory_store(configured)
+    with sqlite3.connect(path) as connection:
+        assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
+
+    with pytest.raises(ValidationError):
+        settings(memory_sqlite_journal_mode="invalid")

@@ -13,6 +13,7 @@ def create_memory_store(settings: Settings) -> SQLiteMemoryStore:
     return SQLiteMemoryStore(
         settings.memory_database_path,
         max_memories=settings.memory_max_items,
+        journal_mode=settings.memory_sqlite_journal_mode,
     )
 
 

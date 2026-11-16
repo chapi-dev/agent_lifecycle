@@ -1,6 +1,7 @@
 name: Publish restaurant agent image
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - agents/restaurant/**

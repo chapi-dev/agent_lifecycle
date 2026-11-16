@@ -1,6 +1,7 @@
 name: Publish kitchen agent image
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - agents/kitchen/**

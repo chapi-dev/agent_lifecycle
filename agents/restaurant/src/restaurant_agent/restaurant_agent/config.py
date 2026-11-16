@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     azure_ai_model_deployment_name: str | None = None
     waiter_max_turns: int = Field(default=20, ge=1, le=100)
     memory_database_path: Path | None = None
+    memory_sqlite_journal_mode: Literal["WAL", "DELETE"] = "WAL"
     memory_max_items: int = Field(default=20, ge=1, le=100)
     app_environment: Literal["development", "test", "production"] = "development"
     enable_dev_fake_identity: bool = False

@@ -1,6 +1,7 @@
 name: Publish cashier agent image
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - agents/cashier/**

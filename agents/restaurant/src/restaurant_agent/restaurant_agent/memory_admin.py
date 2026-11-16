@@ -59,6 +59,7 @@ def run(args: argparse.Namespace) -> int:
     store = SQLiteMemoryStore(
         resolve_database_path(args.database),
         max_memories=int(os.getenv("MEMORY_MAX_ITEMS", "20")),
+        journal_mode=os.getenv("MEMORY_SQLITE_JOURNAL_MODE", "WAL"),
     )
     if args.action == "list":
         memories = store.list_memories(args.actor_id)

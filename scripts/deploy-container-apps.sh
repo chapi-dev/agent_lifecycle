@@ -89,6 +89,7 @@ export CASHIER_AGENT_APP_NAME
 require_vars \
   AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_RESOURCE_GROUP \
   MANAGED_IDENTITY_NAME CONTAINERAPPS_ENVIRONMENT \
+  BFF_STORAGE_NAME MEMORY_STORAGE_NAME MCP_STORAGE_NAME SQLITE_MOUNTS_VALIDATED \
   FRONTEND_APP_NAME BFF_APP_NAME RESTAURANT_AGENT_APP_NAME KITCHEN_AGENT_APP_NAME \
   CASHIER_AGENT_APP_NAME MCP_APP_NAME \
   FRONTEND_IMAGE BFF_IMAGE RESTAURANT_AGENT_IMAGE KITCHEN_AGENT_IMAGE CASHIER_AGENT_IMAGE MCP_IMAGE \
@@ -104,6 +105,13 @@ validate_match AZURE_RESOURCE_GROUP '^[[:alnum:]_.()_-]{1,90}$' "1-90 letters, n
 [[ "$AZURE_RESOURCE_GROUP" != *. ]] || fail "AZURE_RESOURCE_GROUP cannot end with a period"
 validate_match MANAGED_IDENTITY_NAME '^[[:alnum:]][[:alnum:]_-]{2,127}$' "3-128 letters, numbers, underscores, or hyphens, starting with a letter or number"
 validate_match CONTAINERAPPS_ENVIRONMENT '^[a-z][a-z0-9-]{0,58}[a-z0-9]$' "2-60 lowercase letters, numbers, or hyphens, starting with a letter"
+for name in BFF_STORAGE_NAME MEMORY_STORAGE_NAME MCP_STORAGE_NAME; do
+  validate_match "$name" '^[[:alnum:]][[:alnum:]_-]{0,62}$' "a Container Apps environment storage name"
+done
+[[ "$(printf '%s\n' "$BFF_STORAGE_NAME" "$MEMORY_STORAGE_NAME" "$MCP_STORAGE_NAME" | sort -fu | wc -l)" -eq 3 ]] ||
+  fail "BFF, memory and MCP must use distinct registered storage mounts"
+[[ "$SQLITE_MOUNTS_VALIDATED" == "true" ]] ||
+  fail "Validate SQLite locking, recovery and restart behavior on all three mounts before deployment"
 validate_match FOUNDRY_PROJECT_ENDPOINT '^https://[^[:space:]]+/api/projects/[^/[:space:]]+/?$' "an HTTPS Foundry project endpoint"
 validate_match FOUNDRY_PROJECT_RESOURCE_ID '^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\.CognitiveServices/accounts/[^/]+/projects/[^/]+$' "a Foundry project Azure resource ID"
 [[ "$AZURE_SUBSCRIPTION_ID" != "00000000-0000-0000-0000-000000000000" ]] ||
@@ -203,22 +211,43 @@ SEATING_LAYOUT_JSON="$(python3 -c 'import json,sys; print(json.dumps(json.load(o
 export AZURE_CORE_OUTPUT=none
 export AZURE_CORE_ONLY_SHOW_ERRORS=true
 
-az account show >/dev/null 2>&1 || fail "Azure CLI is not authenticated; run az login first"
+az account show --subscription "$AZURE_SUBSCRIPTION_ID" >/dev/null 2>&1 ||
+  fail "Azure CLI cannot access the selected subscription; run az login first"
 az extension show --name containerapp >/dev/null 2>&1 ||
   fail "Azure CLI extension 'containerapp' is required; install it with: az extension add --name containerapp --upgrade"
-az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+az() {
+  command az "$@" --subscription "$AZURE_SUBSCRIPTION_ID"
+}
 # The resource group is a prerequisite, like the Foundry project: the script
 # never creates or updates it, so whatever was set on it by hand is kept.
 [[ "$(az group exists --name "$AZURE_RESOURCE_GROUP" --output tsv)" == "true" ]] ||
   fail "Resource group $AZURE_RESOURCE_GROUP does not exist; create it before running this script"
+az containerapp env show --name "$CONTAINERAPPS_ENVIRONMENT" \
+  --resource-group "$AZURE_RESOURCE_GROUP" >/dev/null 2>&1 ||
+  fail "The selected Container Apps environment must already exist"
+for storage_name in "$BFF_STORAGE_NAME" "$MEMORY_STORAGE_NAME" "$MCP_STORAGE_NAME"; do
+  access_mode="$(az containerapp env storage show --name "$CONTAINERAPPS_ENVIRONMENT" \
+    --resource-group "$AZURE_RESOURCE_GROUP" --storage-name "$storage_name" \
+    --query properties.azureFile.accessMode --output tsv)"
+  [[ "${access_mode,,}" == "readwrite" ]] ||
+    fail "Environment storage $storage_name must exist as a read-write Azure Files mount"
+done
+# Refuse updates: overlapping old and new revisions could concurrently write
+# the same SQLite databases. Rollouts need a separately validated stop/start.
+for app_name in "${app_names[@]}"; do
+  if az containerapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" >/dev/null 2>&1; then
+    fail "Container App $app_name already exists; this script only supports a fresh deployment"
+  fi
+done
+if az identity show --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" >/dev/null 2>&1; then
+  fail "Managed identity $MANAGED_IDENTITY_NAME already exists; refusing to change its permissions"
+fi
 mkdir -p -- "$WORK_DIR"
 
-log "Creating or updating the shared infrastructure"
+log "Creating a dedicated managed identity"
 
-if ! az identity show --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" >/dev/null 2>&1; then
-  az identity create --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" \
-    --location "$AZURE_LOCATION"
-fi
+az identity create --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" \
+  --location "$AZURE_LOCATION"
 IDENTITY_ID="$(az identity show --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query id --output tsv)"
 IDENTITY_CLIENT_ID="$(az identity show --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query clientId --output tsv)"
 IDENTITY_PRINCIPAL_ID="$(az identity show --name "$MANAGED_IDENTITY_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query principalId --output tsv)"
@@ -239,13 +268,6 @@ ensure_role "Foundry User" "$FOUNDRY_PROJECT_RESOURCE_ID"
 if [[ "$KNOWLEDGE_ENABLED" == "true" ]]; then
   ensure_role "Search Index Data Reader" "$AZURE_SEARCH_RESOURCE_ID"
 fi
-
-if ! az containerapp env show --name "$CONTAINERAPPS_ENVIRONMENT" --resource-group "$AZURE_RESOURCE_GROUP" >/dev/null 2>&1; then
-  az containerapp env create --name "$CONTAINERAPPS_ENVIRONMENT" \
-    --resource-group "$AZURE_RESOURCE_GROUP" --location "$AZURE_LOCATION"
-fi
-ENVIRONMENT_ID="$(az containerapp env show --name "$CONTAINERAPPS_ENVIRONMENT" \
-  --resource-group "$AZURE_RESOURCE_GROUP" --query id --output tsv)"
 
 ensure_app_base() {
   local app_name="$1"
@@ -268,16 +290,7 @@ ensure_app_base() {
     fi
     az containerapp create "${create_args[@]}"
   else
-    local current_environment_id
-    current_environment_id="$(az containerapp show --name "$app_name" \
-      --resource-group "$AZURE_RESOURCE_GROUP" --query properties.environmentId --output tsv)"
-    if [[ -z "$current_environment_id" ]]; then
-      current_environment_id="$(az containerapp show --name "$app_name" \
-        --resource-group "$AZURE_RESOURCE_GROUP" --query properties.managedEnvironmentId --output tsv)"
-    fi
-    [[ "$(printf '%s' "$current_environment_id" | tr '[:upper:]' '[:lower:]')" == \
-      "$(printf '%s' "$ENVIRONMENT_ID" | tr '[:upper:]' '[:lower:]')" ]] ||
-      fail "Container App $app_name already exists in a different Container Apps environment"
+    fail "Container App $app_name already exists; refusing to update it"
   fi
   if [[ "$use_identity" == "true" ]]; then
     az containerapp identity assign --name "$app_name" \
@@ -303,18 +316,19 @@ apply_app() {
   local ingress="$3"
   local port="$4"
   local use_identity="$5"
-  shift 5
+  local storage_name="$6"
+  shift 6
   local env_vars=("$@")
   local spec_file="$WORK_DIR/$app_name.json"
 
   ensure_app_base "$app_name" "$image" "$ingress" "$port" "$use_identity" "${env_vars[@]}"
   az containerapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" \
     --output json >"$spec_file"
-  python3 - "$spec_file" "$image" "${env_vars[@]}" <<'PY'
+  python3 - "$spec_file" "$image" "$storage_name" "${env_vars[@]}" <<'PY'
 import json
 import sys
 
-path, image, *pairs = sys.argv[1:]
+path, image, storage_name, *pairs = sys.argv[1:]
 with open(path, encoding="utf-8") as stream:
     spec = json.load(stream)
 spec["properties"]["configuration"]["registries"] = []
@@ -325,11 +339,12 @@ container["env"] = [
     {"name": name, "value": value}
     for name, value in (pair.split("=", 1) for pair in pairs)
 ]
-# No volumes: BFF and MCP keep SQLite in the container's ephemeral /data, so it
-# is lost when the replica restarts or a new revision starts. This also drops
-# the Azure Files mounts of deployments made with earlier versions.
-container.pop("volumeMounts", None)
-template["volumes"] = []
+if storage_name:
+    container["volumeMounts"] = [{"volumeName": "data", "mountPath": "/data"}]
+    template["volumes"] = [{"name": "data", "storageType": "AzureFile", "storageName": storage_name}]
+else:
+    container.pop("volumeMounts", None)
+    template["volumes"] = []
 template["scale"]["minReplicas"] = 1
 template["scale"]["maxReplicas"] = 1
 with open(path, "w", encoding="utf-8") as stream:
@@ -340,7 +355,7 @@ PY
 }
 
 log "Creating or updating MCP (internal ingress)"
-apply_app "$MCP_APP_NAME" "$MCP_IMAGE" internal 8080 false \
+apply_app "$MCP_APP_NAME" "$MCP_IMAGE" internal 8080 false "$MCP_STORAGE_NAME" \
   "SEATING_DATABASE_PATH=/data/seating.db" \
   "SEATING_LAYOUT_ID=$SEATING_LAYOUT_ID" \
   "SEATING_LAYOUT_JSON=$SEATING_LAYOUT_JSON" \
@@ -371,7 +386,7 @@ if [[ "$KNOWLEDGE_ENABLED" == "true" ]]; then
   )
 fi
 apply_app "$KITCHEN_AGENT_APP_NAME" \
-  "$KITCHEN_AGENT_IMAGE" internal 8089 true "${kitchen_env[@]}"
+  "$KITCHEN_AGENT_IMAGE" internal 8089 true "" "${kitchen_env[@]}"
 KITCHEN_FQDN="$(az containerapp show --name "$KITCHEN_AGENT_APP_NAME" \
   --resource-group "$AZURE_RESOURCE_GROUP" \
   --query properties.configuration.ingress.fqdn --output tsv)"
@@ -402,7 +417,7 @@ if [[ "$KNOWLEDGE_ENABLED" == "true" ]]; then
   )
 fi
 apply_app "$CASHIER_AGENT_APP_NAME" \
-  "$CASHIER_AGENT_IMAGE" internal 8090 true "${cashier_env[@]}"
+  "$CASHIER_AGENT_IMAGE" internal 8090 true "" "${cashier_env[@]}"
 CASHIER_FQDN="$(az containerapp show --name "$CASHIER_AGENT_APP_NAME" \
   --resource-group "$AZURE_RESOURCE_GROUP" \
   --query properties.configuration.ingress.fqdn --output tsv)"
@@ -417,7 +432,8 @@ agent_env=(
   "AZURE_AI_MODEL_DEPLOYMENT_NAME=$AZURE_AI_MODEL_DEPLOYMENT_NAME"
   "AZURE_CLIENT_ID=$IDENTITY_CLIENT_ID"
   "WAITER_MAX_TURNS=$WAITER_MAX_TURNS"
-  "MEMORY_DATABASE_PATH=/tmp/memory.db"
+  "MEMORY_DATABASE_PATH=/data/memory.db"
+  "MEMORY_SQLITE_JOURNAL_MODE=DELETE"
   "MEMORY_MAX_ITEMS=$MEMORY_MAX_ITEMS"
   "APP_ENVIRONMENT=production"
   "ENABLE_DEV_FAKE_IDENTITY=false"
@@ -438,17 +454,18 @@ if [[ "$KNOWLEDGE_ENABLED" == "true" ]]; then
   )
 fi
 apply_app "$RESTAURANT_AGENT_APP_NAME" \
-  "$RESTAURANT_AGENT_IMAGE" internal 8088 true "${agent_env[@]}"
+  "$RESTAURANT_AGENT_IMAGE" internal 8088 true "$MEMORY_STORAGE_NAME" "${agent_env[@]}"
 AGENT_FQDN="$(az containerapp show --name "$RESTAURANT_AGENT_APP_NAME" \
   --resource-group "$AZURE_RESOURCE_GROUP" \
   --query properties.configuration.ingress.fqdn --output tsv)"
 [[ -n "$AGENT_FQDN" ]] || fail "Restaurant agent internal FQDN was not assigned"
 
 log "Creating or updating BFF (internal ingress)"
-apply_app "$BFF_APP_NAME" "$BFF_IMAGE" internal 8000 false \
+apply_app "$BFF_APP_NAME" "$BFF_IMAGE" internal 8000 false "$BFF_STORAGE_NAME" \
   "WAITER_AGENT_URL=https://$AGENT_FQDN" \
   "WAITER_AGENT_TIMEOUT_SECONDS=$WAITER_AGENT_TIMEOUT_SECONDS" \
   "BFF_DATABASE_PATH=/data/bff.db" \
+  "BFF_SQLITE_JOURNAL_MODE=DELETE" \
   "WAITER_MAX_TURNS=$WAITER_MAX_TURNS" \
   "APP_ENVIRONMENT=production" \
   "BFF_SESSION_TTL_HOURS=$BFF_SESSION_TTL_HOURS" \
@@ -461,13 +478,14 @@ BFF_FQDN="$(az containerapp show --name "$BFF_APP_NAME" --resource-group "$AZURE
   --query properties.configuration.ingress.fqdn --output tsv)"
 [[ -n "$BFF_FQDN" ]] || fail "BFF internal FQDN was not assigned"
 
-log "Creating or updating frontend (external ingress)"
-apply_app "$FRONTEND_APP_NAME" "$FRONTEND_IMAGE" external 8501 false \
+log "Creating frontend with internal ingress; configure and verify Entra before exposure"
+apply_app "$FRONTEND_APP_NAME" "$FRONTEND_IMAGE" internal 8501 false "" \
   "FRONTEND_BFF_URL=https://$BFF_FQDN" \
   "FRONTEND_BFF_TIMEOUT_SECONDS=30" \
   "FRONTEND_PORT=8501"
 
 FRONTEND_FQDN="$(az containerapp show --name "$FRONTEND_APP_NAME" --resource-group "$AZURE_RESOURCE_GROUP" \
   --query properties.configuration.ingress.fqdn --output tsv)"
-[[ -n "$FRONTEND_FQDN" ]] || fail "Frontend external FQDN was not assigned"
-printf 'Deployment completed: https://%s\n' "$FRONTEND_FQDN"
+[[ -n "$FRONTEND_FQDN" ]] || fail "Frontend internal FQDN was not assigned"
+printf 'Internal frontend: https://%s\n' "$FRONTEND_FQDN"
+printf 'Do not expose it until Entra access and persistent storage have been verified.\n'
