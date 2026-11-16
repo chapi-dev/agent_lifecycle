@@ -2,12 +2,14 @@ param location string
 param containerAppName string
 param managedEnvironmentId string
 param registryLoginServer string
-param keyVaultName string
 param appPort int
 param healthProbePath string
 param modelEndpoint string
 param modelDeployment string
 param tags object
+
+@secure()
+param healthopsDemoToken string
 
 @minLength(1)
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
@@ -46,9 +48,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-07-01' = {
         : [
             {
               name: 'healthops-demo-token'
-              #disable-next-line no-hardcoded-env-urls
-              keyVaultUrl: 'https://${keyVaultName}.vault.azure.net/secrets/demo-token'
-              identity: 'system'
+              value: healthopsDemoToken
             }
           ]
     }

@@ -103,7 +103,7 @@ module containerApp './modules/container-app.bicep' = {
     managedEnvironmentId: containerEnvironment.outputs.environmentId
     containerImage: containerImage
     registryLoginServer: registry.outputs.loginServer
-    keyVaultName: keyVault.outputs.keyVaultName
+    healthopsDemoToken: healthopsDemoToken
     appPort: 8765
     healthProbePath: '/healthz'
     modelEndpoint: 'https://cog-3wobsg75sq6ic.cognitiveservices.azure.com'
