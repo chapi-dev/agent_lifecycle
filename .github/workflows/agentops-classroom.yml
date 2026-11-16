@@ -1,0 +1,34 @@
+name: AgentOps classroom
+
+on:
+  push:
+    paths:
+      - apps/agentops/**
+      - agents/cashier/**
+      - packages/contracts/**
+      - packages/observability/**
+      - .github/workflows/agentops-classroom.yml
+  pull_request:
+    paths:
+      - apps/agentops/**
+      - agents/cashier/**
+      - packages/contracts/**
+      - packages/observability/**
+      - .github/workflows/agentops-classroom.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  classroom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.7"
+      - run: uv python install 3.13
+      - run: uv sync --frozen --project agents/cashier/src/cashier_agent
+      - run: python -m unittest discover -s apps/agentops -p test_server.py
+      - run: uv run --frozen --project agents/cashier/src/cashier_agent python apps/agentops/server.py --self-test
